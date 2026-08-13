@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMC AV Booking Schedule</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --bg: #0a0d12;
+    --bg-panel: #11161d;
+    --bg-panel-raised: #161d26;
+    --line: #232d38;
+    --line-bright: #34424f;
+    --text: #e7edf3;
+    --text-dim: #8ba0b2;
+    --text-faint: #566573;
+    --green: #33e07f;
+    --green-dim: #1a5c3c;
+    --amber: #ffb92e;
+    --amber-dim: #6b4e12;
+    --red: #ff5257;
+    --red-dim: #6b1f22;
+    --cyan: #4fd6f0;
+    --tape: #ff7a3d;
+    --font-display: 'Fjalla One', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(79,214,240,0.05), transparent 45%),
+      radial-gradient(circle at 85% 10%, rgba(255,122,61,0.04), transparent 40%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height:100vh;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* ===== Top Console Bar ===== */
+  .console-bar{
+    position: sticky;
+    top:0;
+    z-index: 50;
+    background: rgba(10,13,18,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .console-inner{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display:flex;
+    align-items:center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-right: auto;
+  }
+  .brand-mark{
+    width: 34px; height: 34px;
+    border-radius: 4px;
+    background: linear-gradient(160deg, #1a222c, #0d1218);
+    border: 1px solid var(--line-bright);
+    display:flex; align-items:center; justify-content:center;
+    position: relative;
+  }
+  .brand-mark::after{
+    content:'';
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 8px 2px rgba(255,82,87,0.7);
+  }
+  .brand-text{
+    font-family: var(--font-display);
+    letter-spacing: 0.03em;
+  }
+  .brand-text .line1{
+    font-size: 11px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    line-height: 1;
+  }
+  .brand-text .line2{
+    font-size: 19px;
+    line-height: 1.2;
+    color: var(--text);
+  }
+  .nav-tabs{
+    display:flex;
+    gap: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .nav-tabs a{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-faint);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .nav-tabs a:hover{ color: var(--text-dim); }
+  .nav-tabs a.active{
+    background: var(--bg-panel-raised);
+    color: var(--cyan);
+    box-shadow: inset 0 0 0 1px var(--line-bright);
+  }
+
+  .live-pill{
+    display:flex; align-items:center; gap:7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    border: 1px solid var(--green-dim);
+    background: rgba(51,224,127,0.06);
+    padding: 5px 11px 5px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .live-dot{
+    width:7px; height:7px; border-radius:50%;
+    background: var(--green);
+    box-shadow: 0 0 6px 1px rgba(51,224,127,0.8);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse-dot{
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.4; transform:scale(0.8); }
+  }
+
+  .sync-badge{
+    display:flex; align-items:center; gap:7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    padding: 5px 11px 5px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sync-badge:hover{ border-color: var(--line-bright); color: var(--text-dim); }
+  .sync-badge.connected{
+    color: var(--green);
+    border-color: var(--green-dim);
+    background: rgba(51,224,127,0.06);
+  }
+  .sync-dot{
+    width:7px; height:7px; border-radius:50%;
+    background: var(--text-faint);
+    flex-shrink:0;
+  }
+  .sync-badge.connected .sync-dot{
+    background: var(--green);
+    box-shadow: 0 0 6px 1px rgba(51,224,127,0.8);
+  }
+  .sync-badge.error{
+    color: var(--red);
+    border-color: rgba(255,82,87,0.4);
+    background: rgba(255,82,87,0.06);
+  }
+  .sync-badge.error .sync-dot{ background: var(--red); box-shadow: 0 0 6px 1px rgba(255,82,87,0.7); }
+
+  .refresh-btn{
+    display:flex; align-items:center; justify-content:center;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+    flex-shrink:0;
+  }
+  .refresh-btn:hover{ border-color: var(--line-bright); color: var(--text); }
+  .refresh-btn.spinning{ animation: spin-refresh 0.7s linear infinite; color: var(--cyan); border-color: rgba(79,214,240,0.4); }
+  @keyframes spin-refresh{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+
+  .offline-banner{
+    display:none;
+    background: rgba(255,185,46,0.08);
+    border-bottom: 1px solid rgba(255,185,46,0.3);
+    color: var(--amber);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align:center;
+    padding: 10px 20px;
+  }
+  .offline-banner.show{ display:block; }
+  .offline-banner button{
+    background: transparent;
+    border: 1px solid rgba(255,185,46,0.5);
+    color: var(--amber);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  .offline-banner button:hover{ background: rgba(255,185,46,0.12); }
+
+  /* ===== Sync settings modal ===== */
+  .sync-field{ margin-bottom: 14px; }
+  .sync-field label{
+    display:block;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+  .sync-field input{
+    width:100%;
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 11px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    outline: none;
+  }
+  .sync-field input:focus{ border-color: var(--cyan); }
+  .sync-help{
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin: 0 0 16px;
+  }
+  .sync-help ol{ margin: 8px 0 0; padding-left: 18px; }
+  .sync-help li{ margin-bottom: 4px; }
+  .sync-help code{
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--cyan);
+  }
+  .sync-actions{ display:flex; gap: 10px; margin-top: 4px; }
+  .sync-actions button{
+    flex:1;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--bg-panel-raised);
+    color: var(--text-dim);
+    transition: all 0.15s;
+  }
+  .sync-actions button:hover{ border-color: var(--line-bright); color: var(--text); }
+  .sync-actions .save-sync{
+    background: linear-gradient(160deg, #1b3a35, #123128);
+    border-color: rgba(51,224,127,0.4);
+    color: var(--green);
+  }
+  .sync-status-line{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    margin-top: 12px;
+    display:none;
+  }
+  .sync-status-line.show{ display:block; }
+  .sync-status-line.ok{ color: var(--green); }
+  .sync-status-line.err{ color: var(--red); }
+
+  /* ===== Hero ===== */
+  .hero{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 46px 24px 28px;
+  }
+  .hero-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    color: var(--tape);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .hero-eyebrow::before{
+    content:'';
+    width: 22px; height: 1px;
+    background: var(--tape);
+  }
+  .hero h1{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(34px, 5vw, 54px);
+    line-height: 1.05;
+    margin: 0 0 14px;
+    letter-spacing: 0.01em;
+  }
+  .hero h1 .accent{ color: var(--cyan); }
+  .hero p{
+    max-width: 640px;
+    color: var(--text-dim);
+    font-size: 15.5px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ===== Stats Row ===== */
+  .stats-row{
+    max-width: 1280px;
+    margin: 30px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .stat-card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before{
+    content:'';
+    position:absolute; top:0; left:0;
+    width:3px; height:100%;
+  }
+  .stat-card.total::before{ background: var(--cyan); }
+  .stat-card.avail::before{ background: var(--green); }
+  .stat-card.low::before{ background: var(--amber); }
+  .stat-card.out::before{ background: var(--red); }
+  .stat-label{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+  .stat-value{
+    font-family: var(--font-mono);
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .stat-card.total .stat-value{ color: var(--cyan); }
+  .stat-card.avail .stat-value{ color: var(--green); }
+  .stat-card.low .stat-value{ color: var(--amber); }
+  .stat-card.out .stat-value{ color: var(--red); }
+
+  /* ===== Controls ===== */
+  .controls{
+    max-width: 1280px;
+    margin: 26px auto 0;
+    padding: 0 24px;
+    display:flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+  .search-wrap{
+    position: relative;
+    flex: 1 1 260px;
+    max-width: 420px;
+  }
+  .search-wrap svg{
+    position:absolute; left:13px; top:50%; transform: translateY(-50%);
+    stroke: var(--text-faint);
+    pointer-events: none;
+  }
+  #search{
+    width:100%;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 11px 14px 11px 38px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  #search::placeholder{ color: var(--text-faint); }
+  #search:focus{ border-color: var(--cyan); }
+
+  .filter-pills{
+    display:flex; gap:8px; flex-wrap:wrap;
+  }
+  .pill{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    padding: 9px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .pill:hover{ border-color: var(--line-bright); color: var(--text); }
+  .pill.active{
+    background: rgba(79,214,240,0.08);
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .status-toggle{
+    margin-left: auto;
+    display:flex;
+    gap: 6px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 3px;
+  }
+  .status-toggle button{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    padding: 7px 12px;
+    border-radius: 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .status-toggle button.active{
+    background: var(--bg-panel-raised);
+    color: var(--text);
+  }
+
+  /* ===== Main ===== */
+  main{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 34px 24px 80px;
+  }
+
+  .category-section{
+    margin-bottom: 40px;
+  }
+  .category-header{
+    display:flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .category-header h2{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    margin: 0;
+    color: var(--text);
+  }
+  .category-count{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-faint);
+  }
+
+  .subcategory-label{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tape);
+    margin: 22px 0 10px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .subcategory-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background: linear-gradient(90deg, var(--line-bright), transparent);
+  }
+
+  .item-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 12px;
+  }
+
+  .item-card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 14px 15px;
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .item-card:hover{
+    border-color: var(--line-bright);
+  }
+  .item-card.hidden{ display:none; }
+
+  .item-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .item-name-wrap{ min-width:0; }
+  .item-no{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-faint);
+    margin-bottom: 2px;
+  }
+  .item-name{
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .tally{
+    flex-shrink:0;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    margin-top: 3px;
+    position: relative;
+  }
+  .tally.green{ background: var(--green); box-shadow: 0 0 9px 2px rgba(51,224,127,0.6); }
+  .tally.amber{ background: var(--amber); box-shadow: 0 0 9px 2px rgba(255,185,46,0.6); }
+  .tally.red{ background: var(--red); box-shadow: 0 0 9px 2px rgba(255,82,87,0.6); }
+
+  .item-bottom{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .item-readout{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .item-readout .avail-num{ color: var(--text); font-weight:600; }
+  .item-readout.status-out .avail-num{ color: var(--red); }
+  .item-readout.status-low .avail-num{ color: var(--amber); }
+  .item-readout.status-ok .avail-num{ color: var(--green); }
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .stepper button{
+    width: 26px; height: 26px;
+    background: var(--bg-panel-raised);
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 15px;
+    cursor: pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .stepper button:hover:not(:disabled){ background: var(--line-bright); color: var(--text); }
+  .stepper button:disabled{ opacity: 0.3; cursor: not-allowed; }
+  .stepper .out-count{
+    width: 30px;
+    text-align:center;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--text);
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    line-height: 26px;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding: 70px 20px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .empty-state .glyph{ font-size: 30px; margin-bottom: 12px; }
+
+  footer{
+    border-top: 1px solid var(--line);
+    padding: 22px 24px 40px;
+    text-align:center;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.03em;
+  }
+  footer .reset-link{
+    color: var(--text-faint);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    background:none; border:none; font-family:inherit; font-size:inherit;
+    padding:0; margin-left: 6px;
+  }
+  footer .reset-link:hover{ color: var(--red); }
+
+  @media (max-width: 720px){
+    .stats-row{ grid-template-columns: repeat(2, 1fr); }
+    .status-toggle{ margin-left: 0; width:100%; justify-content: space-between; }
+  }
+
+
+  /* ===== Booking-page specific ===== */
+  .layout{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 34px 24px 20px;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 900px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px){
+    .booking-row{ grid-template-columns: 1fr; justify-items: start; }
+  }
+
+  .panel{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .panel-title{
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    margin: 0 0 4px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .panel-title .num{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--cyan);
+    border: 1px solid var(--green-dim);
+    border-color: rgba(79,214,240,0.35);
+    background: rgba(79,214,240,0.08);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+  .panel-sub{
+    font-size: 12.5px;
+    color: var(--text-faint);
+    margin: 0 0 18px;
+  }
+
+  .field{ margin-bottom: 14px; }
+  .field label{
+    display:block;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+  .field input[type=text],
+  .field input[type=date],
+  .field input[type=number],
+  .field select{
+    width: 100%;
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 11px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field select{ font-family: var(--font-body); cursor: pointer; }
+  .field input:focus, .field select:focus{ border-color: var(--cyan); }
+  .field-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .label-hint{
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-faint);
+    font-size: 10.5px;
+    margin-left: 4px;
+  }
+
+  .checklist-search{
+    width:100%;
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    outline:none;
+    margin-bottom: 8px;
+  }
+  .checklist-search:focus{ border-color: var(--cyan); }
+
+  .checklist{
+    max-height: 280px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 6px 8px;
+    background: var(--bg-panel-raised);
+  }
+  .checklist-group-label{
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tape);
+    padding: 8px 4px 4px;
+  }
+  .checklist-empty{
+    text-align:center;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    padding: 16px 6px;
+  }
+  .check-row{
+    display:flex;
+    align-items:center;
+    gap: 9px;
+    padding: 7px 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .check-row:hover{ background: rgba(255,255,255,0.03); }
+  .check-row input[type=checkbox]{
+    width: 15px; height: 15px;
+    accent-color: var(--cyan);
+    cursor: pointer;
+    flex-shrink:0;
+  }
+  .check-row .check-name{
+    flex: 1 1 auto;
+    font-size: 13px;
+    color: var(--text);
+    min-width: 0;
+  }
+  .check-row .check-badge{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    white-space: nowrap;
+    flex-shrink:0;
+  }
+  .check-row .check-badge.ok{ color: var(--green); }
+  .check-row .check-badge.low{ color: var(--amber); }
+  .check-row .check-badge.out{ color: var(--red); }
+  .check-row .check-qty{
+    width: 46px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 4px 5px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align:center;
+    flex-shrink:0;
+  }
+  .check-row .check-qty:disabled{ opacity: 0.35; }
+
+  .selected-summary{
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 0;
+  }
+  .selected-summary.show{ display:flex; }
+  .selected-chip{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cyan);
+    background: rgba(79,214,240,0.08);
+    border: 1px solid rgba(79,214,240,0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+
+  .avail-readout{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 9px 11px;
+    border-radius: 6px;
+    background: rgba(51,224,127,0.06);
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    margin-bottom: 14px;
+    display:none;
+  }
+  .avail-readout.show{ display:block; }
+  .avail-readout.warn{
+    background: rgba(255,185,46,0.07);
+    border-color: rgba(255,185,46,0.4);
+    color: var(--amber);
+  }
+  .avail-readout.blocked{
+    background: rgba(255,82,87,0.07);
+    border-color: rgba(255,82,87,0.4);
+    color: var(--red);
+  }
+
+  .form-error{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--red);
+    margin: -6px 0 12px;
+    display:none;
+  }
+  .form-error.show{ display:block; }
+
+  .btn-primary{
+    width:100%;
+    background: linear-gradient(160deg, #1b3a35, #123128);
+    border: 1px solid rgba(51,224,127,0.4);
+    color: var(--green);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary:hover{ border-color: var(--green); background: linear-gradient(160deg, #204840, #143a30); }
+  .btn-primary:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .toast{
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--green);
+    display:none;
+  }
+  .toast.show{ display:block; }
+
+  /* ===== Bookings list ===== */
+  .list-toolbar{
+    display:flex;
+    gap: 10px;
+    align-items:center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .list-search{
+    flex: 1 1 200px;
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 9px 12px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    outline:none;
+  }
+  .list-search:focus{ border-color: var(--cyan); }
+
+  .booking-row{
+    display:grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    gap: 14px;
+    align-items:center;
+    padding: 13px 14px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    margin-bottom: 9px;
+    background: var(--bg-panel-raised);
+  }
+  .booking-row .b-item{ min-width:0; }
+  .booking-row .b-item-name{ display:flex; flex-wrap:wrap; gap:5px; }
+  .booking-row .b-chip{
+    font-size: 12px;
+    font-weight:600;
+    color: var(--text);
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 2px 7px;
+    white-space: nowrap;
+  }
+  .booking-row .b-person{ font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim); margin-top: 3px; }
+  .booking-row .b-dates{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .booking-row .b-dates .arrow{ color: var(--text-faint); margin: 0 4px; }
+  .booking-row .b-qty{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cyan);
+    background: rgba(79,214,240,0.08);
+    border: 1px solid rgba(79,214,240,0.3);
+    border-radius: 4px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+  .booking-row .b-slip{
+    background: rgba(79,214,240,0.06);
+    border: 1px solid rgba(79,214,240,0.3);
+    color: var(--cyan);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .booking-row .b-slip:hover{ background: rgba(79,214,240,0.14); }
+  .booking-row .b-cancel{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .booking-row .b-cancel:hover{ border-color: var(--red); color: var(--red); }
+
+  .list-empty{
+    text-align:center;
+    padding: 40px 20px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+
+  /* ===== Calendar ===== */
+  .calendar-section{
+    max-width: 1280px;
+    margin: 10px auto 60px;
+    padding: 0 24px;
+  }
+  .calendar-header{
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .calendar-header h2{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 24px;
+    margin: 0;
+  }
+  .calendar-legend{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .legend-chip{
+    display:flex; align-items:center; gap: 5px;
+  }
+  .legend-swatch{
+    width: 11px; height: 11px;
+    border-radius: 3px;
+    display:inline-block;
+  }
+  .cal-filter{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline:none;
+  }
+
+  .year-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 14px;
+  }
+  .month-card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 14px 16px;
+  }
+  .month-card.current-month{ border-color: rgba(79,214,240,0.4); }
+  .month-title{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 10px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+  }
+  .month-title .m-count{
+    color: var(--text-faint);
+    font-size: 10.5px;
+  }
+  .weekday-row{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+  .weekday-row span{
+    text-align:center;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-faint);
+  }
+  .day-grid{
+    display:grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+  .day-cell{
+    aspect-ratio: 1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    border-radius: 4px;
+    color: var(--text-faint);
+    cursor: default;
+    position: relative;
+  }
+  .day-cell.empty{ visibility:hidden; }
+  .day-cell.has-bookings{
+    cursor: pointer;
+    color: var(--text);
+  }
+  .day-cell.level-1{ background: rgba(79,214,240,0.14); }
+  .day-cell.level-2{ background: rgba(79,214,240,0.3); }
+  .day-cell.level-3{ background: rgba(255,185,46,0.35); color: #1a1300; }
+  .day-cell.today{
+    box-shadow: 0 0 0 1.5px var(--cyan) inset;
+    font-weight: 700;
+  }
+  .day-cell.has-bookings:hover{ box-shadow: 0 0 0 1.5px var(--text) inset; }
+  .day-cell.just-booked{
+    animation: flash-day 1s ease-in-out 3;
+  }
+  @keyframes flash-day{
+    0%, 100%{ box-shadow: 0 0 0 2px var(--tape) inset; background: rgba(255,122,61,0.45); }
+    50%{ box-shadow: 0 0 0 2px var(--tape) inset; background: rgba(255,122,61,0.15); }
+  }
+  .month-card.just-booked-month{
+    border-color: var(--tape);
+  }
+
+  /* ===== Day detail modal ===== */
+  .modal-backdrop{
+    position: fixed; inset:0;
+    background: rgba(5,7,10,0.7);
+    backdrop-filter: blur(3px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-backdrop.show{ display:flex; }
+  .modal-box{
+    background: var(--bg-panel);
+    border: 1px solid var(--line-bright);
+    border-radius: 10px;
+    max-width: 460px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 22px;
+  }
+  .modal-header{
+    display:flex;
+    justify-content: space-between;
+    align-items:flex-start;
+    margin-bottom: 16px;
+  }
+  .modal-header h3{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 20px;
+    margin: 0;
+  }
+  .modal-close{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-faint);
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height:1;
+  }
+  .modal-close:hover{ color: var(--text); border-color: var(--line-bright); }
+  .modal-booking{
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 11px 13px;
+    margin-bottom: 9px;
+    background: var(--bg-panel-raised);
+  }
+  .modal-booking .mb-name{ font-size: 13.5px; font-weight:600; }
+  .modal-booking .mb-meta{ font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin-top: 4px; line-height:1.6; }
+
+  /* ===== Checkout Slip ===== */
+  .slip-backdrop .modal-box{
+    max-width: 440px;
+    max-height: 86vh;
+    padding: 0;
+    background: #f4f1ea;
+    color: #17191c;
+    border: none;
+    border-radius: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .slip-card{
+    font-family: var(--font-body);
+  }
+  .slip-header{
+    background: linear-gradient(160deg, #12181f, #0a0d12);
+    color: #f4f1ea;
+    padding: 22px 24px 18px;
+    position: relative;
+  }
+  .slip-header::after{
+    content:'';
+    position:absolute;
+    left:0; right:0; bottom:-1px;
+    height: 14px;
+    background:
+      radial-gradient(circle at 10px 0, transparent 9px, #12181f 10px) top left / 20px 14px repeat-x;
+  }
+  .slip-brand-row{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .slip-brand{
+    display:flex; align-items:center; gap:9px;
+  }
+  .slip-brand .dot{
+    width: 10px; height:10px; border-radius:50%;
+    background: var(--red);
+    box-shadow: 0 0 8px 2px rgba(255,82,87,0.7);
+  }
+  .slip-brand-text .l1{
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #8ba0b2;
+  }
+  .slip-brand-text .l2{
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: #f4f1ea;
+  }
+  .slip-status-chip{
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    border: 1px solid rgba(51,224,127,0.4);
+    background: rgba(51,224,127,0.1);
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .slip-title{
+    font-family: var(--font-display);
+    font-size: 24px;
+    letter-spacing: 0.01em;
+    margin: 0 0 3px;
+  }
+  .slip-subtitle{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #8ba0b2;
+  }
+
+  .slip-body{
+    padding: 22px 24px 8px;
+  }
+  .slip-section-label{
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8a8370;
+    margin: 0 0 8px;
+  }
+  .slip-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+    margin-bottom: 20px;
+  }
+  .slip-grid .full{ grid-column: 1 / -1; }
+  .slip-field .k{
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a8370;
+    margin-bottom: 2px;
+  }
+  .slip-field .v{
+    font-size: 14px;
+    font-weight: 600;
+    color: #17191c;
+  }
+  .slip-dates-strip{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #d8d2c2;
+    border-radius: 7px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+  }
+  .slip-dates-strip .d{
+    flex: 1;
+    text-align:center;
+  }
+  .slip-dates-strip .d .k{ font-family: var(--font-mono); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:#8a8370; margin-bottom:3px; }
+  .slip-dates-strip .d .v{ font-family: var(--font-mono); font-size: 13px; font-weight:700; color:#17191c; }
+  .slip-dates-strip .arrow{ color:#c7bfa8; font-size: 15px; }
+  .slip-dates-strip .dur{
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: #5b6b3f;
+    background: #e7edd8;
+    border-radius: 12px;
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+
+  .slip-table{
+    width:100%;
+    border-collapse: collapse;
+    margin-bottom: 6px;
+  }
+  .slip-table th{
+    text-align:left;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8a8370;
+    padding: 0 6px 7px;
+    border-bottom: 1.5px solid #17191c;
+  }
+  .slip-table td{
+    padding: 9px 6px;
+    border-bottom: 1px dashed #d8d2c2;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .slip-table .chk{
+    width: 20px;
+    font-size: 15px;
+    color: #17191c;
+  }
+  .slip-table .it-name{ font-weight: 600; }
+  .slip-table .it-cat{ font-family: var(--font-mono); font-size: 10px; color: #8a8370; margin-top:1px; }
+  .slip-table .it-qty{
+    text-align:right;
+    font-family: var(--font-mono);
+    font-weight:700;
+    white-space:nowrap;
+  }
+
+  .slip-footer{
+    padding: 16px 24px 22px;
+    border-top: 1px dashed #d8d2c2;
+    margin-top: 8px;
+  }
+  .slip-barcode{
+    display:flex;
+    align-items:flex-end;
+    gap: 2px;
+    height: 34px;
+    margin-bottom: 8px;
+  }
+  .slip-barcode span{ display:block; background:#17191c; width:3px; }
+  .slip-id-line{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: #5c574a;
+    margin-bottom: 16px;
+  }
+  .slip-sign-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  .slip-sign-row .line{
+    border-top: 1px solid #17191c;
+    padding-top: 5px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8a8370;
+  }
+  .slip-note{
+    font-size: 11px;
+    color: #6b6656;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+
+  .slip-actions{
+    position: sticky;
+    bottom: 0;
+    display:flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 24px 22px;
+    background: #ebe7dc;
+  }
+  .slip-actions button{
+    flex: 1 1 100px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    padding: 11px;
+    border-radius: 7px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .slip-print-btn{
+    background: #17191c;
+    color: #f4f1ea;
+  }
+  .slip-print-btn:hover{ background: #262a30; }
+  .slip-close-btn{
+    background: transparent;
+    border-color: #b8b09a;
+    color: #4a4536;
+  }
+  .slip-close-btn:hover{ border-color: #8a8370; }
+  .slip-download-btn{
+    background: #e2f5fa;
+    border-color: #34a6bb;
+    color: #0c5866;
+  }
+  .slip-download-btn:hover{ background: #cdeef5; }
+  .slip-download-btn:disabled{ opacity: 0.6; cursor: wait; }
+
+  @media print{
+    body *{ visibility: hidden; }
+    #slip-print-area, #slip-print-area *{ visibility: visible; }
+    #slip-print-area{
+      position: absolute; top:0; left:0; width:100%;
+      background:#fff;
+    }
+    .slip-actions{ display:none; }
+    .modal-backdrop{ position: static; background:none; backdrop-filter:none; padding:0; }
+    .modal-box{ max-width:100%; border-radius:0; box-shadow:none; max-height:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="console-bar">
+  <div class="console-inner">
+    <a class="brand" href="DMC_AV_Cover.html" style="text-decoration:none;color:inherit;">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <div class="line1">Department of Media and Communication</div>
+        <div class="line2">Booking Schedule</div>
+      </div>
+    </a>
+    <div class="nav-tabs">
+      <a href="DMC_AV_Equipment_Board.html">Availability Board</a>
+      <a href="DMC_AV_Booking_Schedule.html" class="active">Booking Schedule</a>
+    </div>
+    <div class="live-pill"><span class="live-dot"></span>2026 SCHEDULE</div>
+    <button class="refresh-btn" id="refresh-btn" title="Refresh shared data from the sheet">&#8635;</button>
+    <button class="sync-badge" id="sync-badge">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-label">Loading shared data&hellip;</span>
+    </button>
+  </div>
+</div>
+
+<div class="offline-banner" id="offline-banner">
+  Showing the last data saved on this device &mdash; couldn't reach the shared sheet just now. <button id="offline-retry-btn">Try again</button>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">Reserve ahead</div>
+  <h1>Put your name on the <span class="accent">gear</span><br>before someone else does.</h1>
+  <p>Reserve DMC equipment for specific dates, see who else has it booked, and check the full year at a glance before you plan a shoot.</p>
+</div>
+
+<div class="stats-row" id="booking-stats">
+  <div class="stat-card total">
+    <div class="stat-label">Total Bookings</div>
+    <div class="stat-value" id="stat-bk-total">0</div>
+  </div>
+  <div class="stat-card avail">
+    <div class="stat-label">Today</div>
+    <div class="stat-value" id="stat-bk-today">0</div>
+  </div>
+  <div class="stat-card low">
+    <div class="stat-label">Next 7 Days</div>
+    <div class="stat-value" id="stat-bk-week">0</div>
+  </div>
+  <div class="stat-card out">
+    <div class="stat-label">Busiest Item</div>
+    <div class="stat-value" id="stat-bk-busiest" style="font-size:16px;">&mdash;</div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="panel">
+    <div class="panel-title"><span class="num">1&ndash;3</span> New Reservation</div>
+    <p class="panel-sub">Fill in borrower details, pick equipment, and set the dates.</p>
+
+    <form id="booking-form">
+      <div class="field">
+        <label>Full name</label>
+        <input type="text" id="f-name" placeholder="e.g. Sok Dara" autocomplete="off">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Course</label>
+          <input type="text" id="f-course" placeholder="e.g. Film Production" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>Class / Year</label>
+          <input type="text" id="f-class" placeholder="e.g. Year 2, Section B" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Check-out date</label>
+          <input type="date" id="f-out" min="2026-01-01" max="2026-12-31" value="2026-01-01">
+        </div>
+        <div class="field">
+          <label>Check-in date</label>
+          <input type="date" id="f-in" min="2026-01-01" max="2026-12-31" value="2026-01-01">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Equipment <span class="label-hint">select one or more</span></label>
+        <input type="text" class="checklist-search" id="item-search" placeholder="Filter equipment by name&hellip;">
+        <div class="checklist" id="item-checklist"></div>
+      </div>
+
+      <div class="selected-summary" id="selected-summary"></div>
+      <div class="avail-readout" id="avail-readout"></div>
+      <div class="form-error" id="form-error"></div>
+
+      <button type="submit" class="btn-primary" id="submit-btn">Reserve equipment</button>
+      <div class="toast" id="toast">Booking confirmed and added to the schedule.</div>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Upcoming Reservations</div>
+    <p class="panel-sub">Everyone's bookings, soonest first. Cancel one if plans change.</p>
+    <div class="list-toolbar">
+      <input type="text" class="list-search" id="list-search" placeholder="Search by name, item, or course">
+    </div>
+    <div id="bookings-list"></div>
+  </div>
+</div>
+
+<div class="calendar-section">
+  <div class="calendar-header">
+    <h2>2026 Booking Calendar</h2>
+    <div class="calendar-legend">
+      <select class="cal-filter" id="cal-filter">
+        <option value="all">All equipment</option>
+      </select>
+      <span class="legend-chip"><span class="legend-swatch" style="background:rgba(79,214,240,0.14)"></span>Light</span>
+      <span class="legend-chip"><span class="legend-swatch" style="background:rgba(79,214,240,0.3)"></span>Moderate</span>
+      <span class="legend-chip"><span class="legend-swatch" style="background:rgba(255,185,46,0.35)"></span>Busy</span>
+    </div>
+  </div>
+  <div class="year-grid" id="year-grid"></div>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-date-title">Date</h3>
+      <button class="modal-close" id="modal-close">&times;</button>
+    </div>
+    <div id="modal-bookings"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop slip-backdrop" id="slip-modal-backdrop">
+  <div class="modal-box" id="slip-print-area">
+    <div class="slip-card">
+      <div class="slip-header">
+        <div class="slip-brand-row">
+          <div class="slip-brand">
+            <span class="dot"></span>
+            <div class="slip-brand-text">
+              <div class="l1">DMC</div>
+              <div class="l2">Equipment Checkout Slip</div>
+            </div>
+          </div>
+          <span class="slip-status-chip">CONFIRMED</span>
+        </div>
+        <div class="slip-title" id="slip-borrower-name">&mdash;</div>
+        <div class="slip-subtitle" id="slip-borrower-meta">&mdash;</div>
+      </div>
+
+      <div class="slip-body">
+        <div class="slip-dates-strip">
+          <div class="d">
+            <div class="k">Check-out</div>
+            <div class="v" id="slip-checkout">&mdash;</div>
+          </div>
+          <span class="arrow">&rarr;</span>
+          <div class="d">
+            <div class="k">Check-in</div>
+            <div class="v" id="slip-checkin">&mdash;</div>
+          </div>
+          <span class="dur" id="slip-duration">&mdash;</span>
+        </div>
+
+        <div class="slip-section-label">Equipment reserved</div>
+        <table class="slip-table">
+          <thead>
+            <tr><th class="chk"></th><th>Item</th><th class="it-qty">Qty</th></tr>
+          </thead>
+          <tbody id="slip-item-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="slip-footer">
+        <div class="slip-barcode" id="slip-barcode"></div>
+        <div class="slip-id-line">
+          <span id="slip-booking-id">BK-000000</span>
+          <span id="slip-timestamp">&mdash;</span>
+        </div>
+        <div class="slip-sign-row">
+          <div class="line">Student signature</div>
+          <div class="line">DMC staff verification</div>
+        </div>
+        <div class="slip-note">Present this slip at the DMC front desk to collect equipment. Check off each item as it's handed over, and keep it on hand for the return check-in.</div>
+      </div>
+    </div>
+
+    <div class="slip-actions">
+      <button class="slip-close-btn" id="slip-close-btn">Close</button>
+      <button class="slip-download-btn" id="slip-download-btn">Download</button>
+      <button class="slip-print-btn" id="slip-print-btn">Print / PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="sync-modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Google Sheet Sync</h3>
+      <button class="modal-close" id="sync-modal-close">&times;</button>
+    </div>
+    <p class="sync-help">
+      Every time a student clicks <strong>Reserve equipment</strong>, this page can send that booking &mdash; with a timestamp &mdash; straight into your Google Sheet. It connects through a small Google Apps Script attached to the sheet, one-time setup:
+      <ol>
+        <li>Open your spreadsheet &rarr; <strong>Extensions &rarr; Apps Script</strong></li>
+        <li>Delete any starter code, paste in the script provided separately</li>
+        <li>Click <strong>Deploy &rarr; New deployment &rarr; Web app</strong></li>
+        <li>Set "Execute as" to <strong>Me</strong> and "Who has access" to <strong>Anyone</strong></li>
+        <li>Deploy, authorize it, then copy the Web app URL it gives you</li>
+        <li>Paste that URL below and save</li>
+      </ol>
+    </p>
+    <div class="sync-field">
+      <label>Web app URL</label>
+      <input type="text" id="sync-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <div class="sync-actions">
+      <button class="save-sync" id="sync-save-btn">Save connection</button>
+      <button id="sync-test-btn">Send test row</button>
+    </div>
+    <div class="sync-status-line" id="sync-status-line"></div>
+  </div>
+</div>
+
+<footer>
+  DMC AV BOOKING SCHEDULE &mdash; SHARED LIVE WITH THE AVAILABILITY BOARD
+  <button class="reset-link" id="reset-bookings-btn">Refresh from sheet</button>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const INVENTORY = [
+  {id:"item-016",cat:"Camera Accessories",sub:"Camera Body",no:"1.1",name:"Sony A7 III",total:4,unit:""},
+  {id:"item-017",cat:"Camera Accessories",sub:"Camera Body",no:"1.2",name:"Sony A7 SIII",total:3,unit:""},
+  {id:"item-018",cat:"Camera Accessories",sub:"Camera Body",no:"1.3",name:"Sony A7 IV",total:2,unit:""},
+  {id:"item-019",cat:"Camera Accessories",sub:"Camera Body",no:"1.4",name:"Sony FX3",total:2,unit:""},
+  {id:"item-020",cat:"Camera Accessories",sub:"Camera Body",no:"1.5",name:"Sony FX6",total:1,unit:""},
+  {id:"item-021",cat:"Camera Accessories",sub:"Camera Body",no:"1.6",name:"Canon 60D",total:1,unit:""},
+  {id:"item-022",cat:"Camera Accessories",sub:"Camera Body",no:"1.7",name:"Canon 650D",total:3,unit:""},
+  {id:"item-023",cat:"Camera Accessories",sub:"Camera Body",no:"1.8",name:"Canon 700D",total:3,unit:""},
+  {id:"item-024",cat:"Camera Accessories",sub:"Camera Body",no:"1.9",name:"Canon 70D",total:2,unit:""},
+  {id:"item-025",cat:"Camera Accessories",sub:"Lens",no:"2.1",name:"Sony G-master 16-35mm",total:1,unit:""},
+  {id:"item-026",cat:"Camera Accessories",sub:"Lens",no:"2.2",name:"Sony G-master 24-105mm",total:3,unit:""},
+  {id:"item-027",cat:"Camera Accessories",sub:"Lens",no:"2.3",name:"Sony G-master 70-200mm",total:1,unit:""},
+  {id:"item-028",cat:"Camera Accessories",sub:"Lens",no:"2.4",name:"Tamron 28-75mm VI",total:4,unit:""},
+  {id:"item-029",cat:"Camera Accessories",sub:"Lens",no:"2.5",name:"Tamron 28-75mm VII",total:2,unit:""},
+  {id:"item-030",cat:"Camera Accessories",sub:"Lens",no:"2.6",name:"Tamron 70-180mm",total:1,unit:""},
+  {id:"item-031",cat:"Camera Accessories",sub:"Memory Card",no:"3.1",name:"Sandisk 1GB",total:5,unit:""},
+  {id:"item-032",cat:"Camera Accessories",sub:"Memory Card",no:"3.2",name:"Sandisk 2GB",total:8,unit:""},
+  {id:"item-033",cat:"Camera Accessories",sub:"Memory Card",no:"3.3",name:"Sandisk 32GB",total:4,unit:""},
+  {id:"item-034",cat:"Camera Accessories",sub:"Memory Card",no:"3.4",name:"Sandisk 64GB",total:6,unit:""},
+  {id:"item-035",cat:"Camera Accessories",sub:"Memory Card",no:"3.5",name:"Sony Tough 64GB",total:2,unit:""},
+  {id:"item-036",cat:"Camera Accessories",sub:"Memory Card",no:"3.6",name:"Sony Tough 128GB",total:4,unit:""},
+  {id:"item-037",cat:"Camera Accessories",sub:"Charger",no:"4.1",name:"Canon Charger",total:7,unit:""},
+  {id:"item-038",cat:"Camera Accessories",sub:"Charger",no:"4.2",name:"Sony Charger",total:4,unit:""},
+  {id:"item-039",cat:"Camera Accessories",sub:"Charger",no:"4.3",name:"Dual fast charger",total:2,unit:""},
+  {id:"item-040",cat:"Camera Accessories",sub:"Charger",no:"4.4",name:"L Battery charger",total:2,unit:""},
+  {id:"item-041",cat:"Camera Accessories",sub:"Charger",no:"4.5",name:"L battery dual charger",total:2,unit:""},
+  {id:"item-042",cat:"Camera Accessories",sub:"Charger",no:"4.6",name:"FX6 battery charger",total:1,unit:""},
+  {id:"item-043",cat:"Camera Accessories",sub:"Battery",no:"5.1",name:"Sony Camera Battery",total:18,unit:""},
+  {id:"item-044",cat:"Camera Accessories",sub:"Battery",no:"5.2",name:"Cannon Camera Battery",total:7,unit:""},
+  {id:"item-045",cat:"Camera Accessories",sub:"Battery",no:"5.3",name:"Monitor Battery",total:10,unit:""},
+  {id:"item-046",cat:"Camera Accessories",sub:"Battery",no:"5.4",name:"FX6 Battery",total:3,unit:""},
+  {id:"item-047",cat:"Camera Accessories",sub:"Cage",no:"6.1",name:"Tilta Rig cage for FX6",total:1,unit:""},
+  {id:"item-048",cat:"Camera Accessories",sub:"Cage",no:"6.2",name:"Smallrig cage for FX3",total:2,unit:""},
+  {id:"item-049",cat:"Camera Accessories",sub:"Cage",no:"6.3",name:"Smallrig cage for Sony A7SIII",total:1,unit:""},
+  {id:"item-050",cat:"Camera Accessories",sub:"Stabalizer",no:"7.1",name:"Old Tripod",total:12,unit:""},
+  {id:"item-051",cat:"Camera Accessories",sub:"Stabalizer",no:"7.2",name:"Old Benro Tripod",total:6,unit:""},
+  {id:"item-052",cat:"Camera Accessories",sub:"Stabalizer",no:"7.3",name:"New Benro Tripod",total:2,unit:""},
+  {id:"item-053",cat:"Camera Accessories",sub:"Stabalizer",no:"7.4",name:"Monopod",total:1,unit:""},
+  {id:"item-054",cat:"Camera Accessories",sub:"Stabalizer",no:"7.5",name:"Yunteng Tripod",total:1,unit:""},
+  {id:"item-055",cat:"Camera Accessories",sub:"Stabalizer",no:"7.6",name:"Zhiyun Gimbal",total:1,unit:""},
+  {id:"item-056",cat:"Camera Accessories",sub:"Stabalizer",no:"7.7",name:"Slider 1m",total:1,unit:""},
+  {id:"item-057",cat:"Camera Accessories",sub:"Monitor",no:"8.1",name:"Ninja Monitor",total:2,unit:""},
+  {id:"item-058",cat:"Camera Accessories",sub:"Monitor",no:"8.2",name:"Feelworld Monitor",total:2,unit:""},
+  {id:"item-059",cat:"Camera Accessories",sub:"Monitor",no:"8.3",name:"Blackmagic monitor",total:1,unit:""},
+  {id:"item-060",cat:"Sound Accessories",sub:"Zoom Recorder",no:"1.1",name:"Zoom H6N",total:6,unit:""},
+  {id:"item-061",cat:"Sound Accessories",sub:"Zoom Recorder",no:"1.2",name:"Zoom H4N",total:6,unit:""},
+  {id:"item-062",cat:"Sound Accessories",sub:"Zoom Recorder",no:"1.3",name:"Zoom H1N",total:2,unit:""},
+  {id:"item-063",cat:"Sound Accessories",sub:"Wireless mic",no:"2.1",name:"Saramonic wireless mic",total:2,unit:"sets"},
+  {id:"item-064",cat:"Sound Accessories",sub:"Wireless mic",no:"2.2",name:"Rode wireless mic",total:3,unit:"sets"},
+  {id:"item-065",cat:"Sound Accessories",sub:"Wireless mic",no:"2.3",name:"Dual Channel Rode wireless mic",total:2,unit:"sets"},
+  {id:"item-066",cat:"Sound Accessories",sub:"Wireless mic",no:"2.4",name:"Wireless sennheiser mic",total:3,unit:"sets"},
+  {id:"item-067",cat:"Sound Accessories",sub:"Wireless mic",no:"2.5",name:"On-camera rode mic",total:3,unit:""},
+  {id:"item-068",cat:"Sound Accessories",sub:"Boom Set",no:"3.1",name:"Boom pole",total:4,unit:""},
+  {id:"item-069",cat:"Sound Accessories",sub:"Boom Set",no:"3.2",name:"Boom suspension",total:4,unit:""},
+  {id:"item-070",cat:"Sound Accessories",sub:"Headset",no:"4.1",name:"Old Headset",total:12,unit:""},
+  {id:"item-071",cat:"Sound Accessories",sub:"Headset",no:"4.2",name:"New headset",total:5,unit:""},
+  {id:"item-072",cat:"Lighting Accessories",sub:"Light Body",no:"1.1",name:"EF-150 JinBei",total:2,unit:""},
+  {id:"item-073",cat:"Lighting Accessories",sub:"Light Body",no:"1.2",name:"EF-300 JinBei",total:1,unit:""},
+  {id:"item-074",cat:"Lighting Accessories",sub:"Light Body",no:"1.3",name:"RGB Apurture 150",total:2,unit:""},
+  {id:"item-075",cat:"Lighting Accessories",sub:"Light Body",no:"1.4",name:"Storm light Apurture 600Px",total:2,unit:""},
+  {id:"item-076",cat:"Lighting Accessories",sub:"Light Body",no:"1.5",name:"LED Panel light",total:2,unit:""},
+  {id:"item-077",cat:"Lighting Accessories",sub:"Light Body",no:"1.6",name:"RGB Tube light",total:3,unit:""},
+  {id:"item-078",cat:"Lighting Accessories",sub:"Light Body",no:"1.7",name:"Photo speedlite",total:2,unit:""},
+  {id:"item-079",cat:"Lighting Accessories",sub:"Soft box",no:"2.1",name:"Jinbei small square softbox",total:2,unit:""},
+  {id:"item-080",cat:"Lighting Accessories",sub:"Soft box",no:"2.2",name:"Godox big square softbox",total:2,unit:""},
+  {id:"item-081",cat:"Lighting Accessories",sub:"Soft box",no:"2.3",name:"Nanlight 120P softbox",total:1,unit:""},
+  {id:"item-082",cat:"Lighting Accessories",sub:"Soft box",no:"2.4",name:"Umbrella softbox",total:1,unit:""},
+  {id:"item-083",cat:"Lighting Accessories",sub:"Soft box",no:"2.5",name:"Light cones with soft",total:3,unit:"sets"},
+  {id:"item-084",cat:"Lighting Accessories",sub:"Soft box",no:"2.6",name:"Light color Gel",total:1,unit:"package"},
+  {id:"item-085",cat:"Lighting Accessories",sub:"Light stand",no:"3.1",name:"Small light stand for tube light",total:2,unit:""},
+  {id:"item-086",cat:"Lighting Accessories",sub:"Light stand",no:"3.2",name:"Big light stand for 150",total:4,unit:""},
+  {id:"item-087",cat:"Lighting Accessories",sub:"Light stand",no:"3.3",name:"Heavy Duty C-stand",total:2,unit:""},
+  {id:"item-088",cat:"Other Accessories",sub:null,no:"1",name:"Drone DJI Mini 4K",total:1,unit:""},
+  {id:"item-089",cat:"Other Accessories",sub:null,no:"2",name:"Digital Video switcher",total:1,unit:""},
+  {id:"item-090",cat:"Other Accessories",sub:null,no:"3",name:"Hollyland wireless transmitter",total:3,unit:"sets"},
+  {id:"item-098",cat:"Other Accessories",sub:null,no:"11",name:"Small Camera bag",total:6,unit:""},
+  {id:"item-099",cat:"Other Accessories",sub:null,no:"12",name:"Medium size camera bag",total:4,unit:""},
+  {id:"item-100",cat:"Other Accessories",sub:null,no:"13",name:"Large size camera bag",total:2,unit:""},
+  {id:"item-101",cat:"Other Accessories",sub:null,no:"14",name:"Magic arms to monitor",total:2,unit:""},
+  {id:"item-102",cat:"Other Accessories",sub:null,no:"15",name:"Monitor stands on camera",total:2,unit:""}
+];
+
+// ===== State =====
+const CACHE_KEY = 'dmc-av-bookings-cache'; // offline fallback only — the sheet is the source of truth
+const YEAR = 2026;
+const TODAY = new Date(); // real "today" used for stats/highlight only
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const WEEKDAYS = ["S","M","T","W","T","F","S"];
+
+// Google Sheets — Apps Script Web App endpoint (pre-configured default; staff can override via the Sheet sync badge)
+const DEFAULT_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz_qBhF3YBPDCrToEwDs58uaV891ZM0AxDMH7m1gMp_4R5X3XASWj-hIRE5Ugf4AGPB/exec';
+
+let bookings = [];
+let calendarFilter = 'all';
+let listSearch = '';
+let lastSyncedAt = null;
+let isUsingCache = false;
+
+function loadCachedBookings(){
+  try{
+    const raw = window.localStorage.getItem(CACHE_KEY);
+    bookings = raw ? JSON.parse(raw) : [];
+  }catch(e){ bookings = []; }
+}
+function saveCachedBookings(){
+  try{ window.localStorage.setItem(CACHE_KEY, JSON.stringify(bookings)); }catch(e){}
+}
+
+// ===== Google Sheet sync (shared source of truth) =====
+const SHEET_SYNC_KEY = 'dmc-sheet-webapp-url';
+
+function getSheetUrl(){
+  try{
+    const stored = window.localStorage.getItem(SHEET_SYNC_KEY);
+    if(stored !== null) return stored; // '' means staff explicitly cleared it
+    return DEFAULT_SHEET_WEBHOOK_URL;
+  }catch(e){ return DEFAULT_SHEET_WEBHOOK_URL; }
+}
+function setSheetUrl(url){
+  try{ window.localStorage.setItem(SHEET_SYNC_KEY, url); }catch(e){}
+}
+
+async function fetchRawBookings(url){
+  const res = await fetch(url, { method: 'GET' });
+  const data = await res.json();
+  if(data.status !== 'success') throw new Error(data.message || 'Unknown error from sheet');
+  return data.bookings || [];
+}
+
+async function fetchBookingsFromSheet(){
+  const url = getSheetUrl();
+  const banner = document.getElementById('offline-banner');
+  if(!url){
+    isUsingCache = true;
+    if(banner) banner.classList.remove('show');
+    return false;
+  }
+  try{
+    const raw = await fetchRawBookings(url);
+    bookings = raw;
+    lastSyncedAt = new Date();
+    isUsingCache = false;
+    saveCachedBookings();
+    if(banner) banner.classList.remove('show');
+    return true;
+  }catch(err){
+    console.warn('Could not load shared bookings, showing cached copy instead:', err);
+    isUsingCache = true;
+    if(bookings.length === 0) loadCachedBookings();
+    if(banner) banner.classList.add('show');
+    return false;
+  }
+}
+
+async function createBookingOnSheet(booking){
+  const url = getSheetUrl();
+  if(!url) return false;
+  const equipment = booking.items.map(it => `${it.itemName} \u00d7${it.qty}`).join(', ');
+  try{
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'create',
+        bookingId: booking.id,
+        name: booking.name,
+        course: booking.course,
+        className: booking.className,
+        equipment,
+        checkOut: booking.checkOut,
+        checkIn: booking.checkIn,
+        itemCount: booking.items.length,
+        itemsJson: JSON.stringify(booking.items)
+      })
+    });
+    return true;
+  }catch(err){
+    console.warn('Create request had a network/CORS hiccup (the write may still have gone through):', err);
+    return false;
+  }
+}
+
+async function cancelBookingOnSheet(bookingId){
+  const url = getSheetUrl();
+  if(!url) return false;
+  try{
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'cancel', bookingId })
+    });
+    return true;
+  }catch(err){
+    console.warn('Cancel request had a network/CORS hiccup (the write may still have gone through):', err);
+    return false;
+  }
+}
+
+function timeAgo(date){
+  if(!date) return '';
+  const secs = Math.floor((Date.now() - date.getTime())/1000);
+  if(secs < 5) return 'just now';
+  if(secs < 60) return `${secs}s ago`;
+  const mins = Math.floor(secs/60);
+  if(mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins/60);
+  return `${hrs}h ago`;
+}
+
+function refreshSyncBadge(){
+  const badge = document.getElementById('sync-badge');
+  const label = document.getElementById('sync-label');
+  const url = getSheetUrl();
+  if(!url){
+    badge.className = 'sync-badge';
+    label.textContent = 'Shared sync: not connected';
+    return;
+  }
+  if(isUsingCache){
+    badge.className = 'sync-badge error';
+    label.textContent = 'Offline \u2014 showing local copy';
+    return;
+  }
+  badge.className = 'sync-badge connected';
+  label.textContent = lastSyncedAt ? `Live \u00b7 synced ${timeAgo(lastSyncedAt)}` : 'Live';
+}
+setInterval(refreshSyncBadge, 15000);
+
+document.getElementById('refresh-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  await fetchBookingsFromSheet();
+  renderAll();
+  renderChecklist();
+  refreshFormSummary();
+  refreshSyncBadge();
+  btn.classList.remove('spinning');
+});
+document.getElementById('offline-retry-btn').addEventListener('click', async () => {
+  await fetchBookingsFromSheet();
+  renderAll();
+  renderChecklist();
+  refreshFormSummary();
+  refreshSyncBadge();
+});
+
+document.getElementById('sync-badge').addEventListener('click', () => {
+  document.getElementById('sync-url-input').value = getSheetUrl();
+  document.getElementById('sync-status-line').classList.remove('show');
+  document.getElementById('sync-modal-backdrop').classList.add('show');
+});
+document.getElementById('sync-modal-close').addEventListener('click', () => {
+  document.getElementById('sync-modal-backdrop').classList.remove('show');
+});
+document.getElementById('sync-modal-backdrop').addEventListener('click', (e) => {
+  if(e.target.id === 'sync-modal-backdrop') e.currentTarget.classList.remove('show');
+});
+
+document.getElementById('sync-save-btn').addEventListener('click', async () => {
+  const val = document.getElementById('sync-url-input').value.trim();
+  const statusLine = document.getElementById('sync-status-line');
+  if(val && !val.startsWith('https://script.google.com/')){
+    statusLine.className = 'sync-status-line err show';
+    statusLine.textContent = 'That doesn\u2019t look like a Google Apps Script web app URL. Double-check and try again.';
+    return;
+  }
+  setSheetUrl(val);
+  refreshSyncBadge();
+  if(val){
+    statusLine.className = 'sync-status-line ok show';
+    statusLine.textContent = 'Saved. Loading shared data\u2026';
+    const ok = await fetchBookingsFromSheet();
+    renderAll();
+    renderChecklist();
+    refreshFormSummary();
+    refreshSyncBadge();
+    statusLine.className = ok ? 'sync-status-line ok show' : 'sync-status-line err show';
+    statusLine.textContent = ok
+      ? `Connected. Loaded ${bookings.length} shared booking${bookings.length===1?'':'s'} from the sheet.`
+      : 'Saved, but couldn\u2019t load data from that URL. Double-check the deployment is live and set to "Anyone" access.';
+  }else{
+    bookings = [];
+    saveCachedBookings();
+    renderAll();
+    renderChecklist();
+    refreshFormSummary();
+    statusLine.className = 'sync-status-line ok show';
+    statusLine.textContent = 'Cleared. This page will no longer read or write shared data.';
+  }
+});
+
+document.getElementById('sync-test-btn').addEventListener('click', async () => {
+  const statusLine = document.getElementById('sync-status-line');
+  const url = document.getElementById('sync-url-input').value.trim() || getSheetUrl();
+  if(!url){
+    statusLine.className = 'sync-status-line err show';
+    statusLine.textContent = 'Paste and save a web app URL first.';
+    return;
+  }
+  setSheetUrl(url);
+  refreshSyncBadge();
+  statusLine.className = 'sync-status-line ok show';
+  statusLine.textContent = 'Sending a test reservation and reading it back\u2026';
+
+  const testId = 'TEST-' + Date.now();
+  const testBooking = {
+    id: testId,
+    name: 'Test Sync',
+    course: 'DMC Setup Check',
+    className: '\u2014',
+    checkOut: '2026-01-01',
+    checkIn: '2026-01-01',
+    items: [{ itemId: 'test', itemName: 'Connection test row', itemCat: 'System', qty: 1 }]
+  };
+
+  await createBookingOnSheet(testBooking);
+  try{
+    const raw = await fetchRawBookings(url);
+    const found = raw.some(b => b.id === testId);
+    await cancelBookingOnSheet(testId); // clean up the test row either way
+    if(found){
+      statusLine.className = 'sync-status-line ok show';
+      statusLine.textContent = 'Success \u2014 wrote a test row and read it back. Read + write both work.';
+      await fetchBookingsFromSheet();
+      renderAll(); renderChecklist(); refreshFormSummary(); refreshSyncBadge();
+    }else{
+      statusLine.className = 'sync-status-line err show';
+      statusLine.textContent = 'Wrote the test row, but couldn\u2019t read it back. Check your spreadsheet directly \u2014 the write may still have worked even if reading failed.';
+    }
+  }catch(err){
+    statusLine.className = 'sync-status-line err show';
+    statusLine.textContent = 'Could not read from that URL. Make sure the deployment\u2019s access is set to "Anyone" and you redeployed after updating the script.';
+  }
+});
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fmtDate(iso){
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+function datesOverlap(aOut, aIn, bOut, bIn){
+  return aOut <= bIn && aIn >= bOut;
+}
+
+// ===== Equipment select =====
+function populateItemSelect(){
+  const cats = [...new Set(INVENTORY.map(i => i.cat))];
+  const filterSel = document.getElementById('cal-filter');
+  let filterHtml = '<option value="all">All equipment</option>';
+  cats.forEach(cat => {
+    filterHtml += `<optgroup label="${escapeHtml(cat)}">`;
+    INVENTORY.filter(i => i.cat === cat).forEach(i => {
+      filterHtml += `<option value="${i.id}">${escapeHtml(i.name)}</option>`;
+    });
+    filterHtml += `</optgroup>`;
+  });
+  filterSel.innerHTML = filterHtml;
+}
+
+// ===== Multi-select equipment checklist =====
+let selectedItems = {}; // { itemId: qty }
+let itemSearchTerm = '';
+
+// ===== Availability calc =====
+function computeAvailability(itemId, checkOut, checkIn, excludeBookingId){
+  const item = INVENTORY.find(i => i.id === itemId);
+  if(!item) return null;
+  if(!checkOut || !checkIn || checkIn < checkOut) return { item, remaining: item.total, invalidDates: true };
+  let reserved = 0;
+  bookings.forEach(b => {
+    if(b.id === excludeBookingId) return;
+    if(!datesOverlap(b.checkOut, b.checkIn, checkOut, checkIn)) return;
+    const match = b.items.find(it => it.itemId === itemId);
+    if(match) reserved += match.qty;
+  });
+  return { item, remaining: item.total - reserved, invalidDates: false };
+}
+
+function renderChecklist(){
+  const wrap = document.getElementById('item-checklist');
+  const checkOut = document.getElementById('f-out').value;
+  const checkIn = document.getElementById('f-in').value;
+  const cats = [...new Set(INVENTORY.map(i => i.cat))];
+  const q = itemSearchTerm.toLowerCase();
+
+  let html = '';
+  let anyVisible = false;
+  cats.forEach(cat => {
+    const catItems = INVENTORY.filter(i => i.cat === cat && (!q || i.name.toLowerCase().includes(q)));
+    if(catItems.length === 0) return;
+    anyVisible = true;
+    html += `<div class="checklist-group-label">${escapeHtml(cat)}</div>`;
+    catItems.forEach(item => {
+      const checked = Object.prototype.hasOwnProperty.call(selectedItems, item.id);
+      const result = computeAvailability(item.id, checkOut, checkIn);
+      const remaining = result.invalidDates ? item.total : result.remaining;
+      const badgeClass = remaining <= 0 ? 'out' : (remaining <= Math.max(1, Math.ceil(item.total*0.25)) ? 'low' : 'ok');
+      const qtyVal = checked ? selectedItems[item.id] : 1;
+      html += `
+        <label class="check-row">
+          <input type="checkbox" data-item-id="${item.id}" ${checked ? 'checked' : ''}>
+          <span class="check-name">${escapeHtml(item.name)}</span>
+          <span class="check-badge ${badgeClass}">${remaining}/${item.total}</span>
+          <input type="number" class="check-qty" data-item-id="${item.id}" min="1" max="${item.total}" value="${qtyVal}" ${checked ? '' : 'disabled'}>
+        </label>`;
+    });
+  });
+  wrap.innerHTML = anyVisible ? html : `<div class="checklist-empty">No equipment matches your filter.</div>`;
+
+  wrap.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const id = cb.dataset.itemId;
+      const qtyInput = wrap.querySelector(`.check-qty[data-item-id="${id}"]`);
+      if(cb.checked){
+        selectedItems[id] = parseInt(qtyInput.value, 10) || 1;
+        qtyInput.disabled = false;
+      }else{
+        delete selectedItems[id];
+        qtyInput.disabled = true;
+      }
+      refreshFormSummary();
+    });
+  });
+  wrap.querySelectorAll('.check-qty').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const id = inp.dataset.itemId;
+      if(selectedItems[id] !== undefined){
+        const max = parseInt(inp.max, 10) || 1;
+        const val = Math.max(1, Math.min(max, parseInt(inp.value, 10) || 1));
+        selectedItems[id] = val;
+      }
+      refreshFormSummary();
+    });
+  });
+}
+
+function refreshFormSummary(){
+  const summary = document.getElementById('selected-summary');
+  const readout = document.getElementById('avail-readout');
+  const submitBtn = document.getElementById('submit-btn');
+  const checkOut = document.getElementById('f-out').value;
+  const checkIn = document.getElementById('f-in').value;
+
+  const ids = Object.keys(selectedItems);
+  if(ids.length === 0){
+    summary.classList.remove('show');
+    summary.innerHTML = '';
+  }else{
+    summary.classList.add('show');
+    summary.innerHTML = ids.map(id => {
+      const item = INVENTORY.find(i => i.id === id);
+      return `<span class="selected-chip">${escapeHtml(item.name)} &times;${selectedItems[id]}</span>`;
+    }).join('');
+  }
+
+  if(!checkOut || !checkIn || checkIn < checkOut){
+    readout.className = 'avail-readout warn show';
+    readout.textContent = 'Check-in date must be on or after the check-out date.';
+    submitBtn.disabled = true;
+    return;
+  }
+  if(ids.length === 0){
+    readout.classList.remove('show');
+    submitBtn.disabled = false;
+    return;
+  }
+
+  const problems = [];
+  ids.forEach(id => {
+    const result = computeAvailability(id, checkOut, checkIn);
+    if(result.remaining < selectedItems[id]){
+      const item = INVENTORY.find(i => i.id === id);
+      problems.push(`${item.name} (only ${Math.max(0,result.remaining)} of ${item.total} available)`);
+    }
+  });
+
+  if(problems.length > 0){
+    readout.className = 'avail-readout blocked show';
+    readout.textContent = `Not enough available: ${problems.join(', ')}.`;
+    submitBtn.disabled = true;
+  }else{
+    readout.className = 'avail-readout show';
+    readout.textContent = `${ids.length} item type${ids.length===1?'':'s'} selected \u2014 all available for these dates.`;
+    submitBtn.disabled = false;
+  }
+}
+
+document.getElementById('item-search').addEventListener('input', (e) => {
+  itemSearchTerm = e.target.value.trim();
+  renderChecklist();
+});
+
+['f-out','f-in'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    renderChecklist();
+    refreshFormSummary();
+  });
+});
+
+// ===== Form submit =====
+document.getElementById('booking-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('f-name').value.trim();
+  const course = document.getElementById('f-course').value.trim();
+  const className = document.getElementById('f-class').value.trim();
+  const checkOut = document.getElementById('f-out').value;
+  const checkIn = document.getElementById('f-in').value;
+  const errorBox = document.getElementById('form-error');
+  const ids = Object.keys(selectedItems);
+
+  if(!name || !course || !className){
+    errorBox.textContent = 'Please fill in name, course, and class.';
+    errorBox.classList.add('show');
+    return;
+  }
+  if(!checkOut || !checkIn || checkIn < checkOut){
+    errorBox.textContent = 'Please choose a valid check-out and check-in date.';
+    errorBox.classList.add('show');
+    return;
+  }
+  if(ids.length === 0){
+    errorBox.textContent = 'Select at least one piece of equipment.';
+    errorBox.classList.add('show');
+    return;
+  }
+  for(const id of ids){
+    const result = computeAvailability(id, checkOut, checkIn);
+    if(!result || result.remaining < selectedItems[id]){
+      errorBox.textContent = 'One or more selected items no longer have enough availability for these dates.';
+      errorBox.classList.add('show');
+      return;
+    }
+  }
+  errorBox.classList.remove('show');
+
+  const items = ids.map(id => {
+    const item = INVENTORY.find(i => i.id === id);
+    return { itemId: id, itemName: item.name, itemCat: item.cat, qty: selectedItems[id] };
+  });
+
+  const newBooking = {
+    id: 'bk-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
+    name, course, className,
+    items, checkOut, checkIn,
+    createdAt: new Date().toISOString()
+  };
+
+  // Optimistic local update so the UI feels instant, then reconcile with the shared sheet.
+  bookings.push(newBooking);
+  saveCachedBookings();
+
+  const toast = document.getElementById('toast');
+  toast.textContent = getSheetUrl()
+    ? 'Booking confirmed \u2014 syncing to the shared sheet\u2026'
+    : 'Booking confirmed and saved on this device (no shared sheet connected).';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3200);
+
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-course').value = '';
+  document.getElementById('f-class').value = '';
+  selectedItems = {};
+
+  renderAll();
+  renderChecklist();
+  refreshFormSummary();
+  highlightJustBooked(checkOut, checkIn);
+  openSlip(newBooking.id);
+
+  createBookingOnSheet(newBooking)
+    .then(() => fetchBookingsFromSheet())
+    .then(() => {
+      renderAll();
+      renderChecklist();
+      refreshFormSummary();
+      refreshSyncBadge();
+    });
+});
+
+function highlightJustBooked(checkOut, checkIn){
+  const dates = [];
+  let cur = new Date(checkOut + 'T00:00:00');
+  const end = new Date(checkIn + 'T00:00:00');
+  while(cur <= end){ dates.push(isoDate(cur)); cur = new Date(cur.getTime() + 24*3600*1000); }
+
+  const calSection = document.querySelector('.calendar-section');
+  if(calSection) calSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  setTimeout(() => {
+    dates.forEach(d => {
+      const cell = document.querySelector(`.day-cell[data-date="${d}"]`);
+      if(cell) cell.classList.add('just-booked');
+    });
+    setTimeout(() => {
+      dates.forEach(d => {
+        const cell = document.querySelector(`.day-cell[data-date="${d}"]`);
+        if(cell) cell.classList.remove('just-booked');
+      });
+    }, 3200);
+  }, 350);
+}
+
+// ===== Bookings list =====
+function itemsLabel(b){
+  return b.items.map(it => `${it.itemName} \u00d7${it.qty}`).join(', ');
+}
+
+function renderBookingsList(){
+  const wrap = document.getElementById('bookings-list');
+  let list = [...bookings].sort((a,b) => a.checkOut.localeCompare(b.checkOut));
+  if(listSearch){
+    const q = listSearch.toLowerCase();
+    list = list.filter(b => (b.name+' '+itemsLabel(b)+' '+b.course+' '+b.className).toLowerCase().includes(q));
+  }
+  if(list.length === 0){
+    wrap.innerHTML = `<div class="list-empty">No reservations yet. Book something above to get started.</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(b => `
+    <div class="booking-row" data-id="${b.id}">
+      <div class="b-item">
+        <div class="b-item-name">${b.items.map(it => `<span class="b-chip">${escapeHtml(it.itemName)} &times;${it.qty}</span>`).join(' ')}</div>
+        <div class="b-person">${escapeHtml(b.name)} &middot; ${escapeHtml(b.course)} &middot; ${escapeHtml(b.className)}</div>
+      </div>
+      <div class="b-dates">${fmtDate(b.checkOut)}<span class="arrow">&rarr;</span>${fmtDate(b.checkIn)}</div>
+      <div class="b-qty">${b.items.length} item${b.items.length===1?'':'s'}</div>
+      <button class="b-slip" data-slip="${b.id}">View slip</button>
+      <button class="b-cancel" data-cancel="${b.id}">Cancel</button>
+    </div>
+  `).join('');
+
+  wrap.querySelectorAll('[data-slip]').forEach(btn => {
+    btn.addEventListener('click', () => openSlip(btn.dataset.slip));
+  });
+  wrap.querySelectorAll('[data-cancel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.cancel;
+      if(!confirm('Cancel this reservation? This removes it from the shared schedule for everyone.')) return;
+
+      bookings = bookings.filter(b => b.id !== id);
+      saveCachedBookings();
+      renderAll();
+      renderChecklist();
+
+      cancelBookingOnSheet(id)
+        .then(() => fetchBookingsFromSheet())
+        .then(() => {
+          renderAll();
+          renderChecklist();
+          refreshFormSummary();
+          refreshSyncBadge();
+        });
+    });
+  });
+}
+
+document.getElementById('list-search').addEventListener('input', (e) => {
+  listSearch = e.target.value.trim();
+  renderBookingsList();
+});
+
+// ===== Stats =====
+function isoDate(d){ return d.toISOString().slice(0,10); }
+
+function renderStats(){
+  document.getElementById('stat-bk-total').textContent = bookings.length;
+
+  const todayIso = isoDate(TODAY);
+  const todayCount = bookings.filter(b => b.checkOut <= todayIso && b.checkIn >= todayIso).length;
+  document.getElementById('stat-bk-today').textContent = todayCount;
+
+  const weekLater = new Date(TODAY.getTime() + 7*24*3600*1000);
+  const weekIso = isoDate(weekLater);
+  const weekCount = bookings.filter(b => datesOverlap(b.checkOut, b.checkIn, todayIso, weekIso)).length;
+  document.getElementById('stat-bk-week').textContent = weekCount;
+
+  const tally = {};
+  bookings.forEach(b => { b.items.forEach(it => { tally[it.itemName] = (tally[it.itemName]||0) + it.qty; }); });
+  const busiest = Object.entries(tally).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('stat-bk-busiest').textContent = busiest ? busiest[0] : '\u2014';
+}
+
+// ===== Calendar =====
+function buildBookingMap(){
+  // dateStr -> [bookings], filtered by calendarFilter
+  const map = {};
+  const relevant = calendarFilter === 'all' ? bookings : bookings.filter(b => b.items.some(it => it.itemId === calendarFilter));
+  relevant.forEach(b => {
+    let cur = new Date(b.checkOut + 'T00:00:00');
+    const end = new Date(b.checkIn + 'T00:00:00');
+    while(cur <= end){
+      const key = isoDate(cur);
+      if(!map[key]) map[key] = [];
+      map[key].push(b);
+      cur = new Date(cur.getTime() + 24*3600*1000);
+    }
+  });
+  return map;
+}
+
+function levelForCount(n){
+  if(n <= 0) return 0;
+  if(n === 1) return 1;
+  if(n === 2) return 2;
+  return 3;
+}
+
+function renderCalendar(){
+  const grid = document.getElementById('year-grid');
+  const map = buildBookingMap();
+  const todayIso = isoDate(TODAY);
+  const isCurrentYear = TODAY.getFullYear() === YEAR;
+
+  let html = '';
+  for(let m = 0; m < 12; m++){
+    const firstDay = new Date(YEAR, m, 1);
+    const daysInMonth = new Date(YEAR, m+1, 0).getDate();
+    const startOffset = firstDay.getDay();
+    const isCurMonth = isCurrentYear && TODAY.getMonth() === m;
+
+    let monthBookingCount = 0;
+    Object.keys(map).forEach(k => { if(k.startsWith(`${YEAR}-${String(m+1).padStart(2,'0')}`)) monthBookingCount++; });
+
+    html += `<div class="month-card ${isCurMonth ? 'current-month' : ''}">
+      <div class="month-title">${MONTH_NAMES[m]} ${YEAR}<span class="m-count">${monthBookingCount} day${monthBookingCount===1?'':'s'} booked</span></div>
+      <div class="weekday-row">${WEEKDAYS.map(w=>`<span>${w}</span>`).join('')}</div>
+      <div class="day-grid">`;
+
+    for(let i = 0; i < startOffset; i++){ html += `<div class="day-cell empty"></div>`; }
+    for(let d = 1; d <= daysInMonth; d++){
+      const dateStr = `${YEAR}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dayBookings = map[dateStr] || [];
+      const level = levelForCount(dayBookings.length);
+      const classes = ['day-cell'];
+      if(level > 0){ classes.push('has-bookings', `level-${level}`); }
+      if(dateStr === todayIso){ classes.push('today'); }
+      html += `<div class="${classes.join(' ')}" ${level>0?`data-date="${dateStr}"`:''}>${d}</div>`;
+    }
+
+    html += `</div></div>`;
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.day-cell.has-bookings').forEach(cell => {
+    cell.addEventListener('click', () => openDayModal(cell.dataset.date, map[cell.dataset.date]));
+  });
+}
+
+function openDayModal(dateStr, dayBookings){
+  const backdrop = document.getElementById('modal-backdrop');
+  const title = document.getElementById('modal-date-title');
+  const list = document.getElementById('modal-bookings');
+  const d = new Date(dateStr + 'T00:00:00');
+  title.textContent = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  list.innerHTML = dayBookings.map(b => `
+    <div class="modal-booking">
+      <div class="mb-name">${b.items.map(it => `${escapeHtml(it.itemName)} <span style="color:var(--cyan)">&times;${it.qty}</span>`).join(', ')}</div>
+      <div class="mb-meta">
+        ${escapeHtml(b.name)} &middot; ${escapeHtml(b.course)}, ${escapeHtml(b.className)}<br>
+        ${fmtDate(b.checkOut)} &rarr; ${fmtDate(b.checkIn)}
+      </div>
+    </div>
+  `).join('');
+  backdrop.classList.add('show');
+}
+
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal-backdrop').classList.remove('show');
+});
+document.getElementById('modal-backdrop').addEventListener('click', (e) => {
+  if(e.target.id === 'modal-backdrop') e.currentTarget.classList.remove('show');
+});
+
+document.getElementById('cal-filter').addEventListener('change', (e) => {
+  calendarFilter = e.target.value;
+  renderCalendar();
+});
+
+// ===== Equipment Reservation Slip =====
+function formatDuration(checkOut, checkIn){
+  const out = new Date(checkOut + 'T00:00:00');
+  const inn = new Date(checkIn + 'T00:00:00');
+  const days = Math.round((inn - out) / 86400000) + 1;
+  return `${days} day${days === 1 ? '' : 's'}`;
+}
+
+function buildBarcode(seed){
+  // Deterministic pseudo-barcode derived from the booking id, purely decorative.
+  let h = 0;
+  for(let i = 0; i < seed.length; i++){ h = (h * 31 + seed.charCodeAt(i)) >>> 0; }
+  let bars = '';
+  for(let i = 0; i < 46; i++){
+    h = (h * 1103515245 + 12345) >>> 0;
+    const width = 1 + (h % 4);
+    const height = 55 + (h % 45);
+    bars += `<span style="width:${width}px;height:${height}%"></span>`;
+  }
+  return bars;
+}
+
+let currentSlipBookingId = null;
+
+function openSlip(bookingId){
+  const b = bookings.find(bk => bk.id === bookingId);
+  if(!b) return;
+  currentSlipBookingId = bookingId;
+
+  document.getElementById('slip-borrower-name').textContent = b.name;
+  document.getElementById('slip-borrower-meta').textContent = `${b.course} \u00b7 ${b.className}`;
+  document.getElementById('slip-checkout').textContent = fmtDate(b.checkOut);
+  document.getElementById('slip-checkin').textContent = fmtDate(b.checkIn);
+  document.getElementById('slip-duration').textContent = formatDuration(b.checkOut, b.checkIn);
+
+  document.getElementById('slip-item-rows').innerHTML = b.items.map(it => `
+    <tr>
+      <td class="chk">&#9744;</td>
+      <td>
+        <div class="it-name">${escapeHtml(it.itemName)}</div>
+        <div class="it-cat">${escapeHtml(it.itemCat)}</div>
+      </td>
+      <td class="it-qty">&times;${it.qty}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('slip-barcode').innerHTML = buildBarcode(b.id);
+  document.getElementById('slip-booking-id').textContent = b.id.toUpperCase();
+  const created = new Date(b.createdAt);
+  document.getElementById('slip-timestamp').textContent = created.toLocaleString('en-US', {
+    month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'
+  });
+
+  document.getElementById('slip-modal-backdrop').classList.add('show');
+}
+
+document.getElementById('slip-close-btn').addEventListener('click', () => {
+  document.getElementById('slip-modal-backdrop').classList.remove('show');
+});
+document.getElementById('slip-print-btn').addEventListener('click', () => {
+  window.print();
+});
+document.getElementById('slip-download-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('slip-download-btn');
+  const card = document.querySelector('.slip-card');
+  if(!card || typeof html2canvas === 'undefined') return;
+
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Preparing\u2026';
+
+  try{
+    const canvas = await html2canvas(card, {
+      backgroundColor: '#f4f1ea',
+      scale: 2,
+      useCORS: true
+    });
+    const link = document.createElement('a');
+    const idPart = (currentSlipBookingId || 'reservation').toUpperCase();
+    link.download = `DMC_Equipment_Slip_${idPart}.png`;
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }catch(err){
+    console.warn('Slip download failed:', err);
+    alert('Could not generate the download. You can still use Print / PDF instead.');
+  }finally{
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+});
+document.getElementById('slip-modal-backdrop').addEventListener('click', (e) => {
+  if(e.target.id === 'slip-modal-backdrop') e.currentTarget.classList.remove('show');
+});
+
+document.getElementById('reset-bookings-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('reset-bookings-btn');
+  btn.disabled = true;
+  await fetchBookingsFromSheet();
+  renderAll();
+  renderChecklist();
+  refreshFormSummary();
+  refreshSyncBadge();
+  btn.disabled = false;
+});
+
+function applyDeepLinkParams(){
+  const params = new URLSearchParams(window.location.search);
+  const itemId = params.get('item');
+  const date = params.get('date');
+
+  if(date){
+    document.getElementById('f-out').value = date;
+    document.getElementById('f-in').value = date;
+  }
+  if(itemId && INVENTORY.some(i => i.id === itemId)){
+    selectedItems[itemId] = 1;
+  }
+  if(itemId || date){
+    const panel = document.querySelector('.layout .panel');
+    if(panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// ===== Init =====
+function renderAll(){
+  renderStats();
+  renderBookingsList();
+  renderCalendar();
+}
+
+async function init(){
+  loadCachedBookings();
+  populateItemSelect();
+  applyDeepLinkParams();
+  renderChecklist();
+  refreshFormSummary();
+  refreshSyncBadge();
+  renderAll();
+
+  await fetchBookingsFromSheet();
+  renderChecklist();
+  refreshFormSummary();
+  refreshSyncBadge();
+  renderAll();
+}
+
+init();
+
+</script>
+</body>
+</html>

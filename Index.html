@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMC AV Equipment Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0d12;
+    --bg-panel: #11161d;
+    --bg-panel-raised: #161d26;
+    --line: #232d38;
+    --line-bright: #34424f;
+    --text: #e7edf3;
+    --text-dim: #8ba0b2;
+    --text-faint: #566573;
+    --green: #33e07f;
+    --green-dim: #1a5c3c;
+    --amber: #ffb92e;
+    --red: #ff5257;
+    --cyan: #4fd6f0;
+    --tape: #ff7a3d;
+    --font-display: 'Fjalla One', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ height: 100%; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* ===== Thin top rail, matches console bar language ===== */
+  .top-rail{
+    position: fixed;
+    top:0; left:0; right:0;
+    z-index: 20;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 20px 28px;
+  }
+  .rail-brand{
+    display:flex; align-items:center; gap:10px;
+  }
+  .rail-mark{
+    width: 30px; height: 30px;
+    border-radius: 4px;
+    background: linear-gradient(160deg, rgba(26,34,44,0.9), rgba(13,18,24,0.9));
+    border: 1px solid rgba(52,66,79,0.8);
+    backdrop-filter: blur(4px);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .rail-mark::after{
+    content:'';
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 8px 2px rgba(255,82,87,0.7);
+  }
+  .rail-label{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(231,237,243,0.65);
+  }
+  .rail-status{
+    display:flex; align-items:center; gap:7px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    border: 1px solid rgba(51,224,127,0.35);
+    background: rgba(51,224,127,0.06);
+    backdrop-filter: blur(4px);
+    padding: 6px 12px 6px 10px;
+    border-radius: 20px;
+  }
+  .rail-dot{
+    width:6px; height:6px; border-radius:50%;
+    background: var(--green);
+    box-shadow: 0 0 6px 1px rgba(51,224,127,0.8);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse-dot{
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.4; transform:scale(0.8); }
+  }
+
+  /* ===== Hero ===== */
+  .cover{
+    position: relative;
+    min-height: 100vh;
+    display:flex;
+    align-items: flex-end;
+    padding: 0;
+  }
+  .cover-bg{
+    position: absolute;
+    inset: 0;
+    background-image: url('DMC_Equipment_Hero.jpg');
+    background-size: cover;
+    background-position: center 42%;
+    filter: saturate(0.92) contrast(1.03);
+    transform: scale(1.03);
+  }
+  .cover-scrim{
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(8,10,14,0.55) 0%, rgba(8,10,14,0.35) 28%, rgba(8,10,14,0.72) 62%, rgba(6,8,11,0.96) 100%),
+      linear-gradient(90deg, rgba(6,8,11,0.55) 0%, rgba(6,8,11,0.05) 38%, rgba(6,8,11,0.05) 62%, rgba(6,8,11,0.55) 100%);
+  }
+  .cover-vignette{
+    position:absolute;
+    inset:0;
+    box-shadow: inset 0 0 220px 60px rgba(4,5,7,0.75);
+    pointer-events:none;
+  }
+  .scanlines{
+    position:absolute; inset:0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: overlay;
+    pointer-events:none;
+    opacity: 0.5;
+  }
+
+  .cover-content{
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px 90px;
+  }
+
+  .eyebrow-row{
+    display:flex;
+    align-items:center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .eyebrow-row .tick{
+    width: 22px; height: 1px;
+    background: var(--tape);
+    flex-shrink:0;
+  }
+  .eyebrow{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--tape);
+  }
+
+  .dept-line{
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    letter-spacing: 0.04em;
+    color: var(--text-dim);
+    margin: 0 0 16px;
+  }
+
+  h1{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(40px, 6.4vw, 84px);
+    line-height: 1.02;
+    letter-spacing: 0.005em;
+    margin: 0 0 22px;
+    max-width: 920px;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.4);
+  }
+  h1 .accent{ color: var(--cyan); }
+
+  .cover-meta-row{
+    display:flex;
+    align-items:center;
+    gap: 22px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+  .creator-chip{
+    display:flex;
+    align-items:center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--text-dim);
+    border: 1px solid var(--line-bright);
+    background: rgba(17,22,29,0.55);
+    backdrop-filter: blur(6px);
+    padding: 8px 14px 8px 10px;
+    border-radius: 20px;
+  }
+  .creator-chip .avatar-dot{
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(150deg, var(--cyan), #1f7f96);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-display);
+    font-size: 11px;
+    color: #061014;
+  }
+  .creator-chip b{ color: var(--text); font-weight:600; }
+
+  .stat-strip{
+    display:flex;
+    gap: 26px;
+    flex-wrap: wrap;
+  }
+  .stat-strip .s{
+    font-family: var(--font-mono);
+  }
+  .stat-strip .s .n{
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    line-height:1;
+  }
+  .stat-strip .s .n.green{ color: var(--green); }
+  .stat-strip .s .n.cyan{ color: var(--cyan); }
+  .stat-strip .s .l{
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-top: 3px;
+  }
+
+  .enter-row{
+    display:flex;
+    align-items:center;
+    gap: 18px;
+    margin-top: 38px;
+    flex-wrap: wrap;
+  }
+
+  .enter-btn{
+    position: relative;
+    display:inline-flex;
+    align-items:center;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #06150d;
+    background: linear-gradient(180deg, #4bf39a, var(--green));
+    border: none;
+    padding: 16px 26px 16px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(51,224,127,0.5), 0 10px 30px -8px rgba(51,224,127,0.55);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    text-decoration:none;
+  }
+  .enter-btn:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 1px rgba(51,224,127,0.7), 0 14px 34px -6px rgba(51,224,127,0.65);
+  }
+  .enter-btn:active{ transform: translateY(0); }
+  .enter-btn .arrow{
+    font-size: 16px;
+    transition: transform 0.15s ease;
+  }
+  .enter-btn:hover .arrow{ transform: translateX(4px); }
+
+  .enter-hint{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.03em;
+  }
+
+  footer.cover-footer{
+    position: fixed;
+    bottom: 18px;
+    left: 0; right:0;
+    z-index: 10;
+    text-align:center;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: rgba(139,160,178,0.55);
+    pointer-events:none;
+  }
+
+  @media (max-width: 640px){
+    .top-rail{ padding: 16px 18px; }
+    .cover-content{ padding: 0 18px 70px; }
+    .cover-meta-row{ gap: 14px; }
+    .stat-strip{ gap: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-rail">
+  <div class="rail-brand">
+    <div class="rail-mark"></div>
+    <div class="rail-label">Department of Media and Communication</div>
+  </div>
+  <div class="rail-status"><span class="rail-dot"></span>SYSTEM READY</div>
+</div>
+
+<div class="cover">
+  <div class="cover-bg"></div>
+  <div class="cover-scrim"></div>
+  <div class="scanlines"></div>
+  <div class="cover-vignette"></div>
+
+  <div class="cover-content">
+    <div class="eyebrow-row">
+      <span class="tick"></span>
+      <span class="eyebrow">Department of Media and Communication</span>
+    </div>
+
+    <h1>Audio Visual Equipment<br><span class="accent">Management System</span></h1>
+
+    <div class="cover-meta-row">
+      <div class="creator-chip">
+        <span class="avatar-dot"></span>
+        Created by <b>Bunleng Ouk</b>
+      </div>
+    </div>
+
+    <div class="stat-strip">
+      <div class="s"><div class="n cyan">102</div><div class="l">Tracked Items</div></div>
+      <div class="s"><div class="n green">6</div><div class="l">Categories</div></div>
+      <div class="s"><div class="n">2026</div><div class="l">Booking Year</div></div>
+    </div>
+
+    <div class="enter-row">
+      <a href="DMC_AV_Equipment_Board.html" class="enter-btn" id="enter-btn">
+        Click here <span class="arrow">&rarr;</span>
+      </a>
+      <span class="enter-hint">Check live availability &amp; reserve equipment</span>
+    </div>
+  </div>
+</div>
+
+<footer class="cover-footer">DMC AV EQUIPMENT MANAGEMENT SYSTEM &mdash; AVAILABILITY BOARD &middot; BOOKING SCHEDULE</footer>
+
+</body>
+</html>

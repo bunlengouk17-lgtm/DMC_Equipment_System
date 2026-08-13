@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMC AV Equipment Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0d12;
+    --bg-panel: #11161d;
+    --bg-panel-raised: #161d26;
+    --line: #232d38;
+    --line-bright: #34424f;
+    --text: #e7edf3;
+    --text-dim: #8ba0b2;
+    --text-faint: #566573;
+    --green: #33e07f;
+    --green-dim: #1a5c3c;
+    --amber: #ffb92e;
+    --amber-dim: #6b4e12;
+    --red: #ff5257;
+    --red-dim: #6b1f22;
+    --cyan: #4fd6f0;
+    --tape: #ff7a3d;
+    --font-display: 'Fjalla One', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(79,214,240,0.05), transparent 45%),
+      radial-gradient(circle at 85% 10%, rgba(255,122,61,0.04), transparent 40%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height:100vh;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* ===== Top Console Bar ===== */
+  .console-bar{
+    position: sticky;
+    top:0;
+    z-index: 50;
+    background: rgba(10,13,18,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .console-inner{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display:flex;
+    align-items:center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-right: auto;
+  }
+  .brand-mark{
+    width: 34px; height: 34px;
+    border-radius: 4px;
+    background: linear-gradient(160deg, #1a222c, #0d1218);
+    border: 1px solid var(--line-bright);
+    display:flex; align-items:center; justify-content:center;
+    position: relative;
+  }
+  .brand-mark::after{
+    content:'';
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 8px 2px rgba(255,82,87,0.7);
+  }
+  .brand-text{
+    font-family: var(--font-display);
+    letter-spacing: 0.03em;
+  }
+  .brand-text .line1{
+    font-size: 11px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    line-height: 1;
+  }
+  .brand-text .line2{
+    font-size: 19px;
+    line-height: 1.2;
+    color: var(--text);
+  }
+  .nav-tabs{
+    display:flex;
+    gap: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 3px;
+  }
+  .nav-tabs a{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-faint);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .nav-tabs a:hover{ color: var(--text-dim); }
+  .nav-tabs a.active{
+    background: var(--bg-panel-raised);
+    color: var(--cyan);
+    box-shadow: inset 0 0 0 1px var(--line-bright);
+  }
+
+  .live-pill{
+    display:flex; align-items:center; gap:7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--green);
+    border: 1px solid var(--green-dim);
+    background: rgba(51,224,127,0.06);
+    padding: 5px 11px 5px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .live-dot{
+    width:7px; height:7px; border-radius:50%;
+    background: var(--green);
+    box-shadow: 0 0 6px 1px rgba(51,224,127,0.8);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse-dot{
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.4; transform:scale(0.8); }
+  }
+
+  .sync-badge{
+    display:flex; align-items:center; gap:7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--text-faint);
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    padding: 5px 11px 5px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sync-badge:hover{ border-color: var(--line-bright); color: var(--text-dim); }
+  .sync-badge.connected{
+    color: var(--green);
+    border-color: var(--green-dim);
+    background: rgba(51,224,127,0.06);
+  }
+  .sync-dot{
+    width:7px; height:7px; border-radius:50%;
+    background: var(--text-faint);
+    flex-shrink:0;
+  }
+  .sync-badge.connected .sync-dot{
+    background: var(--green);
+    box-shadow: 0 0 6px 1px rgba(51,224,127,0.8);
+  }
+  .sync-badge.error{
+    color: var(--red);
+    border-color: rgba(255,82,87,0.4);
+    background: rgba(255,82,87,0.06);
+  }
+  .sync-badge.error .sync-dot{ background: var(--red); box-shadow: 0 0 6px 1px rgba(255,82,87,0.7); }
+
+  .refresh-btn{
+    display:flex; align-items:center; justify-content:center;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+    flex-shrink:0;
+  }
+  .refresh-btn:hover{ border-color: var(--line-bright); color: var(--text); }
+  .refresh-btn.spinning{ animation: spin-refresh 0.7s linear infinite; color: var(--cyan); border-color: rgba(79,214,240,0.4); }
+  @keyframes spin-refresh{ from{ transform: rotate(0deg); } to{ transform: rotate(360deg); } }
+
+  .offline-banner{
+    display:none;
+    background: rgba(255,185,46,0.08);
+    border-bottom: 1px solid rgba(255,185,46,0.3);
+    color: var(--amber);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align:center;
+    padding: 10px 20px;
+  }
+  .offline-banner.show{ display:block; }
+  .offline-banner button{
+    background: transparent;
+    border: 1px solid rgba(255,185,46,0.5);
+    color: var(--amber);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-left: 8px;
+  }
+  .offline-banner button:hover{ background: rgba(255,185,46,0.12); }
+
+  /* ===== Modal (Sheet sync settings) ===== */
+  .modal-backdrop{
+    position: fixed; inset:0;
+    background: rgba(5,7,10,0.7);
+    backdrop-filter: blur(3px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-backdrop.show{ display:flex; }
+  .modal-box{
+    background: var(--bg-panel);
+    border: 1px solid var(--line-bright);
+    border-radius: 10px;
+    max-width: 460px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 22px;
+  }
+  .modal-header{
+    display:flex;
+    justify-content: space-between;
+    align-items:flex-start;
+    margin-bottom: 16px;
+  }
+  .modal-header h3{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 20px;
+    margin: 0;
+  }
+  .modal-close{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-faint);
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height:1;
+  }
+  .modal-close:hover{ color: var(--text); border-color: var(--line-bright); }
+
+  .sync-field{ margin-bottom: 14px; }
+  .sync-field label{
+    display:block;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+  .sync-field input{
+    width:100%;
+    background: var(--bg-panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 10px 11px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    outline: none;
+  }
+  .sync-field input:focus{ border-color: var(--cyan); }
+  .sync-help{
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin: 0 0 16px;
+  }
+  .sync-actions{ display:flex; gap: 10px; margin-top: 4px; }
+  .sync-actions button{
+    flex:1;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    background: var(--bg-panel-raised);
+    color: var(--text-dim);
+    transition: all 0.15s;
+  }
+  .sync-actions button:hover{ border-color: var(--line-bright); color: var(--text); }
+  .sync-actions .save-sync{
+    background: linear-gradient(160deg, #1b3a35, #123128);
+    border-color: rgba(51,224,127,0.4);
+    color: var(--green);
+  }
+  .sync-status-line{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    margin-top: 12px;
+    display:none;
+  }
+  .sync-status-line.show{ display:block; }
+  .sync-status-line.ok{ color: var(--green); }
+  .sync-status-line.err{ color: var(--red); }
+
+  /* ===== Hero ===== */
+  .hero{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 46px 24px 28px;
+  }
+  .hero-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    color: var(--tape);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .hero-eyebrow::before{
+    content:'';
+    width: 22px; height: 1px;
+    background: var(--tape);
+  }
+  .hero h1{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(34px, 5vw, 54px);
+    line-height: 1.05;
+    margin: 0 0 14px;
+    letter-spacing: 0.01em;
+  }
+  .hero h1 .accent{ color: var(--cyan); }
+  .hero p{
+    max-width: 640px;
+    color: var(--text-dim);
+    font-size: 15.5px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* ===== Stats Row ===== */
+  .stats-row{
+    max-width: 1280px;
+    margin: 30px auto 0;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .stat-card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before{
+    content:'';
+    position:absolute; top:0; left:0;
+    width:3px; height:100%;
+  }
+  .stat-card.total::before{ background: var(--cyan); }
+  .stat-card.avail::before{ background: var(--green); }
+  .stat-card.low::before{ background: var(--amber); }
+  .stat-card.out::before{ background: var(--red); }
+  .stat-label{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+  .stat-value{
+    font-family: var(--font-mono);
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .stat-card.total .stat-value{ color: var(--cyan); }
+  .stat-card.avail .stat-value{ color: var(--green); }
+  .stat-card.low .stat-value{ color: var(--amber); }
+  .stat-card.out .stat-value{ color: var(--red); }
+
+  /* ===== Controls ===== */
+  .controls{
+    max-width: 1280px;
+    margin: 26px auto 0;
+    padding: 0 24px;
+    display:flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+  .search-wrap{
+    position: relative;
+    flex: 1 1 260px;
+    max-width: 420px;
+  }
+  .search-wrap svg{
+    position:absolute; left:13px; top:50%; transform: translateY(-50%);
+    stroke: var(--text-faint);
+    pointer-events: none;
+  }
+  #search{
+    width:100%;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 11px 14px 11px 38px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  #search::placeholder{ color: var(--text-faint); }
+  #search:focus{ border-color: var(--cyan); }
+
+  .filter-pills{
+    display:flex; gap:8px; flex-wrap:wrap;
+  }
+  .pill{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    padding: 9px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .pill:hover{ border-color: var(--line-bright); color: var(--text); }
+  .pill.active{
+    background: rgba(79,214,240,0.08);
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  .status-toggle{
+    margin-left: auto;
+    display:flex;
+    gap: 6px;
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 3px;
+  }
+  .status-toggle button{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    padding: 7px 12px;
+    border-radius: 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .status-toggle button.active{
+    background: var(--bg-panel-raised);
+    color: var(--text);
+  }
+
+  /* ===== Main ===== */
+  main{
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 34px 24px 80px;
+  }
+
+  .category-section{
+    margin-bottom: 40px;
+  }
+  .category-header{
+    display:flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .category-header h2{
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 0.02em;
+    margin: 0;
+    color: var(--text);
+  }
+  .category-count{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-faint);
+  }
+
+  .subcategory-label{
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--tape);
+    margin: 22px 0 10px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .subcategory-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background: linear-gradient(90deg, var(--line-bright), transparent);
+  }
+
+  .item-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 12px;
+  }
+
+  .item-card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 14px 15px;
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .item-card:hover{
+    border-color: var(--line-bright);
+  }
+  .item-card.hidden{ display:none; }
+
+  .item-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .item-name-wrap{ min-width:0; }
+  .item-no{
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-faint);
+    margin-bottom: 2px;
+  }
+  .item-name{
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .tally{
+    flex-shrink:0;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    margin-top: 3px;
+    position: relative;
+  }
+  .tally.green{ background: var(--green); box-shadow: 0 0 9px 2px rgba(51,224,127,0.6); }
+  .tally.amber{ background: var(--amber); box-shadow: 0 0 9px 2px rgba(255,185,46,0.6); }
+  .tally.red{ background: var(--red); box-shadow: 0 0 9px 2px rgba(255,82,87,0.6); }
+
+  .item-bottom{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .item-readout{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .item-readout .avail-num{ color: var(--text); font-weight:600; }
+  .item-readout.status-out .avail-num{ color: var(--red); }
+  .item-readout.status-low .avail-num{ color: var(--amber); }
+  .item-readout.status-ok .avail-num{ color: var(--green); }
+
+  .reserve-btn{
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(51,224,127,0.35);
+    background: rgba(51,224,127,0.08);
+    color: var(--green);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .reserve-btn:hover{ background: rgba(51,224,127,0.16); border-color: rgba(51,224,127,0.55); }
+  .reserve-btn[aria-disabled="true"]{
+    color: var(--text-faint);
+    border-color: var(--line);
+    background: var(--bg-panel-raised);
+    pointer-events: none;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding: 70px 20px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .empty-state .glyph{ font-size: 30px; margin-bottom: 12px; }
+
+  footer{
+    border-top: 1px solid var(--line);
+    padding: 22px 24px 40px;
+    text-align:center;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    letter-spacing: 0.03em;
+  }
+  footer .reset-link{
+    color: var(--text-faint);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    background:none; border:none; font-family:inherit; font-size:inherit;
+    padding:0; margin-left: 6px;
+  }
+  footer .reset-link:hover{ color: var(--red); }
+
+  @media (max-width: 720px){
+    .stats-row{ grid-template-columns: repeat(2, 1fr); }
+    .status-toggle{ margin-left: 0; width:100%; justify-content: space-between; }
+  }
+</style>
+</head>
+<body>
+
+<div class="console-bar">
+  <div class="console-inner">
+    <a class="brand" href="DMC_AV_Cover.html" style="text-decoration:none;color:inherit;">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <div class="line1">Department of Media and Communication</div>
+        <div class="line2">AV Equipment Board</div>
+      </div>
+    </a>
+    <div class="nav-tabs">
+      <a href="DMC_AV_Equipment_Board.html" class="active">Availability Board</a>
+      <a href="DMC_AV_Booking_Schedule.html">Booking Schedule</a>
+    </div>
+    <div class="live-pill"><span class="live-dot"></span>LIVE AVAILABILITY</div>
+    <button class="refresh-btn" id="refresh-btn" title="Refresh shared data from the sheet">&#8635;</button>
+    <button class="sync-badge" id="sync-badge">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-label">Loading shared data&hellip;</span>
+    </button>
+  </div>
+</div>
+
+<div class="offline-banner" id="offline-banner">
+  Showing the last data saved on this device &mdash; couldn't reach the shared sheet just now. <button id="offline-retry-btn">Try again</button>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">Pre-flight check</div>
+  <h1>Know what's on the <span class="accent">shelf</span><br>before you walk in.</h1>
+  <p>Every camera, mic, light, and cable in the DMC inventory — tracked in real time. Check availability, reserve what you need, and skip the front-desk guesswork.</p>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card total">
+    <div class="stat-label">Total Units</div>
+    <div class="stat-value" id="stat-total">0</div>
+  </div>
+  <div class="stat-card avail">
+    <div class="stat-label">Fully Available</div>
+    <div class="stat-value" id="stat-avail">0</div>
+  </div>
+  <div class="stat-card low">
+    <div class="stat-label">Running Low</div>
+    <div class="stat-value" id="stat-low">0</div>
+  </div>
+  <div class="stat-card out">
+    <div class="stat-label">Checked Out</div>
+    <div class="stat-value" id="stat-out">0</div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="search" placeholder="Search equipment (e.g. Sony A7 III, tripod, boom pole)">
+  </div>
+  <div class="filter-pills" id="category-pills"></div>
+  <div class="status-toggle" id="status-toggle">
+    <button class="active" data-status="all">All</button>
+    <button data-status="available">Available</button>
+    <button data-status="out">Checked out</button>
+  </div>
+</div>
+
+<main id="main-content"></main>
+
+<footer>
+  DMC AV EQUIPMENT BOARD &mdash; SHARED LIVE WITH THE BOOKING SCHEDULE
+  <button class="reset-link" id="reset-btn">Refresh from sheet</button>
+</footer>
+
+<div class="modal-backdrop" id="sync-modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Google Sheet Sync</h3>
+      <button class="modal-close" id="sync-modal-close">&times;</button>
+    </div>
+    <p class="sync-help">
+      This board reads live availability from the same Google Sheet the Booking Schedule page writes to &mdash; so everyone, on any device, sees the same real data. Both pages share one connection:
+    </p>
+    <div class="sync-field">
+      <label>Web app URL</label>
+      <input type="text" id="sync-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <div class="sync-actions">
+      <button class="save-sync" id="sync-save-btn">Save connection</button>
+      <button id="sync-test-btn">Test connection</button>
+    </div>
+    <div class="sync-status-line" id="sync-status-line"></div>
+  </div>
+</div>
+
+<script>
+const INVENTORY = [
+  {id:"item-016",cat:"Camera Accessories",sub:"Camera Body",no:"1.1",name:"Sony A7 III",total:4,unit:""},
+  {id:"item-017",cat:"Camera Accessories",sub:"Camera Body",no:"1.2",name:"Sony A7 SIII",total:3,unit:""},
+  {id:"item-018",cat:"Camera Accessories",sub:"Camera Body",no:"1.3",name:"Sony A7 IV",total:2,unit:""},
+  {id:"item-019",cat:"Camera Accessories",sub:"Camera Body",no:"1.4",name:"Sony FX3",total:2,unit:""},
+  {id:"item-020",cat:"Camera Accessories",sub:"Camera Body",no:"1.5",name:"Sony FX6",total:1,unit:""},
+  {id:"item-021",cat:"Camera Accessories",sub:"Camera Body",no:"1.6",name:"Canon 60D",total:1,unit:""},
+  {id:"item-022",cat:"Camera Accessories",sub:"Camera Body",no:"1.7",name:"Canon 650D",total:3,unit:""},
+  {id:"item-023",cat:"Camera Accessories",sub:"Camera Body",no:"1.8",name:"Canon 700D",total:3,unit:""},
+  {id:"item-024",cat:"Camera Accessories",sub:"Camera Body",no:"1.9",name:"Canon 70D",total:2,unit:""},
+  {id:"item-025",cat:"Camera Accessories",sub:"Lens",no:"2.1",name:"Sony G-master 16-35mm",total:1,unit:""},
+  {id:"item-026",cat:"Camera Accessories",sub:"Lens",no:"2.2",name:"Sony G-master 24-105mm",total:3,unit:""},
+  {id:"item-027",cat:"Camera Accessories",sub:"Lens",no:"2.3",name:"Sony G-master 70-200mm",total:1,unit:""},
+  {id:"item-028",cat:"Camera Accessories",sub:"Lens",no:"2.4",name:"Tamron 28-75mm VI",total:4,unit:""},
+  {id:"item-029",cat:"Camera Accessories",sub:"Lens",no:"2.5",name:"Tamron 28-75mm VII",total:2,unit:""},
+  {id:"item-030",cat:"Camera Accessories",sub:"Lens",no:"2.6",name:"Tamron 70-180mm",total:1,unit:""},
+  {id:"item-031",cat:"Camera Accessories",sub:"Memory Card",no:"3.1",name:"Sandisk 1GB",total:5,unit:""},
+  {id:"item-032",cat:"Camera Accessories",sub:"Memory Card",no:"3.2",name:"Sandisk 2GB",total:8,unit:""},
+  {id:"item-033",cat:"Camera Accessories",sub:"Memory Card",no:"3.3",name:"Sandisk 32GB",total:4,unit:""},
+  {id:"item-034",cat:"Camera Accessories",sub:"Memory Card",no:"3.4",name:"Sandisk 64GB",total:6,unit:""},
+  {id:"item-035",cat:"Camera Accessories",sub:"Memory Card",no:"3.5",name:"Sony Tough 64GB",total:2,unit:""},
+  {id:"item-036",cat:"Camera Accessories",sub:"Memory Card",no:"3.6",name:"Sony Tough 128GB",total:4,unit:""},
+  {id:"item-037",cat:"Camera Accessories",sub:"Charger",no:"4.1",name:"Canon Charger",total:7,unit:""},
+  {id:"item-038",cat:"Camera Accessories",sub:"Charger",no:"4.2",name:"Sony Charger",total:4,unit:""},
+  {id:"item-039",cat:"Camera Accessories",sub:"Charger",no:"4.3",name:"Dual fast charger",total:2,unit:""},
+  {id:"item-040",cat:"Camera Accessories",sub:"Charger",no:"4.4",name:"L Battery charger",total:2,unit:""},
+  {id:"item-041",cat:"Camera Accessories",sub:"Charger",no:"4.5",name:"L battery dual charger",total:2,unit:""},
+  {id:"item-042",cat:"Camera Accessories",sub:"Charger",no:"4.6",name:"FX6 battery charger",total:1,unit:""},
+  {id:"item-043",cat:"Camera Accessories",sub:"Battery",no:"5.1",name:"Sony Camera Battery",total:18,unit:""},
+  {id:"item-044",cat:"Camera Accessories",sub:"Battery",no:"5.2",name:"Cannon Camera Battery",total:7,unit:""},
+  {id:"item-045",cat:"Camera Accessories",sub:"Battery",no:"5.3",name:"Monitor Battery",total:10,unit:""},
+  {id:"item-046",cat:"Camera Accessories",sub:"Battery",no:"5.4",name:"FX6 Battery",total:3,unit:""},
+  {id:"item-047",cat:"Camera Accessories",sub:"Cage",no:"6.1",name:"Tilta Rig cage for FX6",total:1,unit:""},
+  {id:"item-048",cat:"Camera Accessories",sub:"Cage",no:"6.2",name:"Smallrig cage for FX3",total:2,unit:""},
+  {id:"item-049",cat:"Camera Accessories",sub:"Cage",no:"6.3",name:"Smallrig cage for Sony A7SIII",total:1,unit:""},
+  {id:"item-050",cat:"Camera Accessories",sub:"Stabalizer",no:"7.1",name:"Old Tripod",total:12,unit:""},
+  {id:"item-051",cat:"Camera Accessories",sub:"Stabalizer",no:"7.2",name:"Old Benro Tripod",total:6,unit:""},
+  {id:"item-052",cat:"Camera Accessories",sub:"Stabalizer",no:"7.3",name:"New Benro Tripod",total:2,unit:""},
+  {id:"item-053",cat:"Camera Accessories",sub:"Stabalizer",no:"7.4",name:"Monopod",total:1,unit:""},
+  {id:"item-054",cat:"Camera Accessories",sub:"Stabalizer",no:"7.5",name:"Yunteng Tripod",total:1,unit:""},
+  {id:"item-055",cat:"Camera Accessories",sub:"Stabalizer",no:"7.6",name:"Zhiyun Gimbal",total:1,unit:""},
+  {id:"item-056",cat:"Camera Accessories",sub:"Stabalizer",no:"7.7",name:"Slider 1m",total:1,unit:""},
+  {id:"item-057",cat:"Camera Accessories",sub:"Monitor",no:"8.1",name:"Ninja Monitor",total:2,unit:""},
+  {id:"item-058",cat:"Camera Accessories",sub:"Monitor",no:"8.2",name:"Feelworld Monitor",total:2,unit:""},
+  {id:"item-059",cat:"Camera Accessories",sub:"Monitor",no:"8.3",name:"Blackmagic monitor",total:1,unit:""},
+  {id:"item-060",cat:"Sound Accessories",sub:"Zoom Recorder",no:"1.1",name:"Zoom H6N",total:6,unit:""},
+  {id:"item-061",cat:"Sound Accessories",sub:"Zoom Recorder",no:"1.2",name:"Zoom H4N",total:6,unit:""},
+  {id:"item-062",cat:"Sound Accessories",sub:"Zoom Recorder",no:"1.3",name:"Zoom H1N",total:2,unit:""},
+  {id:"item-063",cat:"Sound Accessories",sub:"Wireless mic",no:"2.1",name:"Saramonic wireless mic",total:2,unit:"sets"},
+  {id:"item-064",cat:"Sound Accessories",sub:"Wireless mic",no:"2.2",name:"Rode wireless mic",total:3,unit:"sets"},
+  {id:"item-065",cat:"Sound Accessories",sub:"Wireless mic",no:"2.3",name:"Dual Channel Rode wireless mic",total:2,unit:"sets"},
+  {id:"item-066",cat:"Sound Accessories",sub:"Wireless mic",no:"2.4",name:"Wireless sennheiser mic",total:3,unit:"sets"},
+  {id:"item-067",cat:"Sound Accessories",sub:"Wireless mic",no:"2.5",name:"On-camera rode mic",total:3,unit:""},
+  {id:"item-068",cat:"Sound Accessories",sub:"Boom Set",no:"3.1",name:"Boom pole",total:4,unit:""},
+  {id:"item-069",cat:"Sound Accessories",sub:"Boom Set",no:"3.2",name:"Boom suspension",total:4,unit:""},
+  {id:"item-070",cat:"Sound Accessories",sub:"Headset",no:"4.1",name:"Old Headset",total:12,unit:""},
+  {id:"item-071",cat:"Sound Accessories",sub:"Headset",no:"4.2",name:"New headset",total:5,unit:""},
+  {id:"item-072",cat:"Lighting Accessories",sub:"Light Body",no:"1.1",name:"EF-150 JinBei",total:2,unit:""},
+  {id:"item-073",cat:"Lighting Accessories",sub:"Light Body",no:"1.2",name:"EF-300 JinBei",total:1,unit:""},
+  {id:"item-074",cat:"Lighting Accessories",sub:"Light Body",no:"1.3",name:"RGB Apurture 150",total:2,unit:""},
+  {id:"item-075",cat:"Lighting Accessories",sub:"Light Body",no:"1.4",name:"Storm light Apurture 600Px",total:2,unit:""},
+  {id:"item-076",cat:"Lighting Accessories",sub:"Light Body",no:"1.5",name:"LED Panel light",total:2,unit:""},
+  {id:"item-077",cat:"Lighting Accessories",sub:"Light Body",no:"1.6",name:"RGB Tube light",total:3,unit:""},
+  {id:"item-078",cat:"Lighting Accessories",sub:"Light Body",no:"1.7",name:"Photo speedlite",total:2,unit:""},
+  {id:"item-079",cat:"Lighting Accessories",sub:"Soft box",no:"2.1",name:"Jinbei small square softbox",total:2,unit:""},
+  {id:"item-080",cat:"Lighting Accessories",sub:"Soft box",no:"2.2",name:"Godox big square softbox",total:2,unit:""},
+  {id:"item-081",cat:"Lighting Accessories",sub:"Soft box",no:"2.3",name:"Nanlight 120P softbox",total:1,unit:""},
+  {id:"item-082",cat:"Lighting Accessories",sub:"Soft box",no:"2.4",name:"Umbrella softbox",total:1,unit:""},
+  {id:"item-083",cat:"Lighting Accessories",sub:"Soft box",no:"2.5",name:"Light cones with soft",total:3,unit:"sets"},
+  {id:"item-084",cat:"Lighting Accessories",sub:"Soft box",no:"2.6",name:"Light color Gel",total:1,unit:"package"},
+  {id:"item-085",cat:"Lighting Accessories",sub:"Light stand",no:"3.1",name:"Small light stand for tube light",total:2,unit:""},
+  {id:"item-086",cat:"Lighting Accessories",sub:"Light stand",no:"3.2",name:"Big light stand for 150",total:4,unit:""},
+  {id:"item-087",cat:"Lighting Accessories",sub:"Light stand",no:"3.3",name:"Heavy Duty C-stand",total:2,unit:""},
+  {id:"item-088",cat:"Other Accessories",sub:null,no:"1",name:"Drone DJI Mini 4K",total:1,unit:""},
+  {id:"item-089",cat:"Other Accessories",sub:null,no:"2",name:"Digital Video switcher",total:1,unit:""},
+  {id:"item-090",cat:"Other Accessories",sub:null,no:"3",name:"Hollyland wireless transmitter",total:3,unit:"sets"},
+  {id:"item-091",cat:"Other Accessories",sub:null,no:"4",name:"HDMI to HDMI 2m",total:6,unit:""},
+  {id:"item-097",cat:"Other Accessories",sub:null,no:"10",name:"Rolling power cable",total:2,unit:""},
+  {id:"item-098",cat:"Other Accessories",sub:null,no:"11",name:"Small Camera bag",total:6,unit:""},
+  {id:"item-099",cat:"Other Accessories",sub:null,no:"12",name:"Medium size camera bag",total:4,unit:""},
+  {id:"item-100",cat:"Other Accessories",sub:null,no:"13",name:"Large size camera bag",total:2,unit:""},
+  {id:"item-101",cat:"Other Accessories",sub:null,no:"14",name:"Magic arms to monitor",total:2,unit:""},
+  {id:"item-102",cat:"Other Accessories",sub:null,no:"15",name:"Monitor stands on camera",total:2,unit:""}
+];
+
+// ===== State =====
+const CACHE_KEY = 'dmc-av-bookings-cache'; // offline fallback only — the sheet is the source of truth
+const SHEET_SYNC_KEY = 'dmc-sheet-webapp-url'; // shared with the Booking Schedule page (same origin/folder)
+const DEFAULT_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbz_qBhF3YBPDCrToEwDs58uaV891ZM0AxDMH7m1gMp_4R5X3XASWj-hIRE5Ugf4AGPB/exec';
+
+let bookings = [];
+let activeCategory = 'all';
+let activeStatus = 'all';
+let searchTerm = '';
+let lastSyncedAt = null;
+let isUsingCache = false;
+
+function loadCachedBookings(){
+  try{
+    const raw = window.localStorage.getItem(CACHE_KEY);
+    bookings = raw ? JSON.parse(raw) : [];
+  }catch(e){ bookings = []; }
+}
+function saveCachedBookings(){
+  try{ window.localStorage.setItem(CACHE_KEY, JSON.stringify(bookings)); }catch(e){}
+}
+
+function getSheetUrl(){
+  try{
+    const stored = window.localStorage.getItem(SHEET_SYNC_KEY);
+    if(stored !== null) return stored; // '' means staff explicitly cleared it
+    return DEFAULT_SHEET_WEBHOOK_URL;
+  }catch(e){ return DEFAULT_SHEET_WEBHOOK_URL; }
+}
+function setSheetUrl(url){
+  try{ window.localStorage.setItem(SHEET_SYNC_KEY, url); }catch(e){}
+}
+
+async function fetchRawBookings(url){
+  const res = await fetch(url, { method: 'GET' });
+  const data = await res.json();
+  if(data.status !== 'success') throw new Error(data.message || 'Unknown error from sheet');
+  return data.bookings || [];
+}
+
+async function fetchBookingsFromSheet(){
+  const url = getSheetUrl();
+  const banner = document.getElementById('offline-banner');
+  if(!url){
+    isUsingCache = true;
+    if(banner) banner.classList.remove('show');
+    return false;
+  }
+  try{
+    const raw = await fetchRawBookings(url);
+    bookings = raw;
+    lastSyncedAt = new Date();
+    isUsingCache = false;
+    saveCachedBookings();
+    if(banner) banner.classList.remove('show');
+    return true;
+  }catch(err){
+    console.warn('Could not load shared bookings, showing cached copy instead:', err);
+    isUsingCache = true;
+    if(bookings.length === 0) loadCachedBookings();
+    if(banner) banner.classList.add('show');
+    return false;
+  }
+}
+
+function timeAgo(date){
+  if(!date) return '';
+  const secs = Math.floor((Date.now() - date.getTime())/1000);
+  if(secs < 5) return 'just now';
+  if(secs < 60) return `${secs}s ago`;
+  const mins = Math.floor(secs/60);
+  if(mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins/60);
+  return `${hrs}h ago`;
+}
+
+function refreshSyncBadge(){
+  const badge = document.getElementById('sync-badge');
+  const label = document.getElementById('sync-label');
+  const url = getSheetUrl();
+  if(!url){
+    badge.className = 'sync-badge';
+    label.textContent = 'Shared sync: not connected';
+    return;
+  }
+  if(isUsingCache){
+    badge.className = 'sync-badge error';
+    label.textContent = 'Offline \u2014 showing local copy';
+    return;
+  }
+  badge.className = 'sync-badge connected';
+  label.textContent = lastSyncedAt ? `Live \u00b7 synced ${timeAgo(lastSyncedAt)}` : 'Live';
+}
+setInterval(refreshSyncBadge, 15000);
+
+function todayIso(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// "Checked out" = reserved by an active booking whose date range covers today.
+function outCount(itemId){
+  const t = todayIso();
+  let sum = 0;
+  bookings.forEach(b => {
+    if(b.checkOut > t || b.checkIn < t) return;
+    const match = b.items.find(it => it.itemId === itemId);
+    if(match) sum += match.qty;
+  });
+  return sum;
+}
+
+function statusFor(item){
+  const out = outCount(item.id);
+  const remaining = item.total - out;
+  if(remaining <= 0) return 'out';
+  if(remaining <= Math.max(1, Math.ceil(item.total * 0.25))) return 'low';
+  return 'ok';
+}
+
+// ===== Derived data =====
+const CATEGORY_ORDER = ["TV Studio","Audio Studio","Camera Accessories","Sound Accessories","Lighting Accessories","Other Accessories"];
+
+function getCategories(){
+  const set = [];
+  CATEGORY_ORDER.forEach(c => { if(INVENTORY.some(i => i.cat === c)) set.push(c); });
+  return set;
+}
+
+function groupByCategory(items){
+  const map = {};
+  items.forEach(it => {
+    if(!map[it.cat]) map[it.cat] = [];
+    map[it.cat].push(it);
+  });
+  return map;
+}
+
+function groupBySub(items){
+  const map = {};
+  const order = [];
+  items.forEach(it => {
+    const key = it.sub || '__none__';
+    if(!map[key]){ map[key] = []; order.push(key); }
+    map[key].push(it);
+  });
+  return { map, order };
+}
+
+// ===== Rendering =====
+function renderPills(){
+  const wrap = document.getElementById('category-pills');
+  const cats = getCategories();
+  let html = `<button class="pill active" data-cat="all">All Categories</button>`;
+  cats.forEach(c => {
+    html += `<button class="pill" data-cat="${escapeAttr(c)}">${escapeHtml(c)}</button>`;
+  });
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeCategory = btn.dataset.cat;
+      wrap.querySelectorAll('.pill').forEach(b => b.classList.toggle('active', b === btn));
+      render();
+    });
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+function matchesFilters(item){
+  if(activeCategory !== 'all' && item.cat !== activeCategory) return false;
+  const st = statusFor(item);
+  if(activeStatus === 'available' && st === 'out') return false;
+  if(activeStatus === 'out' && st !== 'out') return false;
+  if(searchTerm){
+    const hay = (item.name + ' ' + (item.sub || '') + ' ' + item.cat).toLowerCase();
+    if(!hay.includes(searchTerm)) return false;
+  }
+  return true;
+}
+
+function renderItemCard(item){
+  const out = outCount(item.id);
+  const remaining = item.total - out;
+  const st = statusFor(item);
+  const tallyClass = st === 'ok' ? 'green' : (st === 'low' ? 'amber' : 'red');
+  const readoutClass = st === 'ok' ? 'status-ok' : (st === 'low' ? 'status-low' : 'status-out');
+  const unitLabel = item.unit ? ' ' + item.unit : '';
+  const noLabel = item.sub ? `${item.sub} · No. ${item.no}` : `No. ${item.no}`;
+  const reserveUrl = `DMC_AV_Booking_Schedule.html?item=${encodeURIComponent(item.id)}&date=${todayIso()}`;
+  const disabledAttr = remaining <= 0 ? 'aria-disabled="true"' : '';
+
+  return `
+  <div class="item-card" data-id="${escapeAttr(item.id)}">
+    <div class="item-top">
+      <div class="item-name-wrap">
+        <div class="item-no">${escapeHtml(noLabel)}</div>
+        <div class="item-name">${escapeHtml(item.name)}</div>
+      </div>
+      <div class="tally ${tallyClass}" title="${st === 'ok' ? 'Available' : st === 'low' ? 'Running low' : 'Fully checked out today'}"></div>
+    </div>
+    <div class="item-bottom">
+      <div class="item-readout ${readoutClass}">
+        <span class="avail-num">${remaining}</span> / ${item.total}${unitLabel} available
+      </div>
+      <a class="reserve-btn" href="${reserveUrl}" ${disabledAttr}>${remaining <= 0 ? 'Full today' : 'Reserve'}</a>
+    </div>
+  </div>`;
+}
+
+function renderMain(){
+  const main = document.getElementById('main-content');
+  const filtered = INVENTORY.filter(matchesFilters);
+
+  if(filtered.length === 0){
+    main.innerHTML = `<div class="empty-state"><div class="glyph">&#9679;&#9679;&#9679;</div>No equipment matches your search.<br>Try a different term or clear filters.</div>`;
+    return;
+  }
+
+  const byCategory = groupByCategory(filtered);
+  const cats = getCategories().filter(c => byCategory[c]);
+
+  let html = '';
+  cats.forEach(cat => {
+    const items = byCategory[cat];
+    html += `<section class="category-section">
+      <div class="category-header">
+        <h2>${escapeHtml(cat)}</h2>
+        <span class="category-count">${items.length} item${items.length === 1 ? '' : 's'}</span>
+      </div>`;
+
+    const { map, order } = groupBySub(items);
+    order.forEach(key => {
+      const subItems = map[key];
+      if(key !== '__none__'){
+        html += `<div class="subcategory-label">${escapeHtml(key)}</div>`;
+      }
+      html += `<div class="item-grid">`;
+      subItems.forEach(it => { html += renderItemCard(it); });
+      html += `</div>`;
+    });
+
+    html += `</section>`;
+  });
+
+  main.innerHTML = html;
+}
+
+function renderStats(){
+  const total = INVENTORY.reduce((sum, i) => sum + i.total, 0);
+  let avail = 0, low = 0, out = 0;
+  INVENTORY.forEach(i => {
+    const st = statusFor(i);
+    if(st === 'ok') avail++;
+    else if(st === 'low') low++;
+    else out++;
+  });
+  document.getElementById('stat-total').textContent = total.toLocaleString();
+  document.getElementById('stat-avail').textContent = avail;
+  document.getElementById('stat-low').textContent = low;
+  document.getElementById('stat-out').textContent = out;
+}
+
+function render(){
+  renderStats();
+  renderMain();
+}
+
+// ===== Controls wiring =====
+document.getElementById('search').addEventListener('input', (e) => {
+  searchTerm = e.target.value.trim().toLowerCase();
+  render();
+});
+
+document.getElementById('status-toggle').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-status]');
+  if(!btn) return;
+  activeStatus = btn.dataset.status;
+  document.querySelectorAll('#status-toggle button').forEach(b => b.classList.toggle('active', b === btn));
+  render();
+});
+
+document.getElementById('refresh-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('spinning');
+  await fetchBookingsFromSheet();
+  render();
+  refreshSyncBadge();
+  btn.classList.remove('spinning');
+});
+document.getElementById('offline-retry-btn').addEventListener('click', async () => {
+  await fetchBookingsFromSheet();
+  render();
+  refreshSyncBadge();
+});
+document.getElementById('reset-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('reset-btn');
+  btn.disabled = true;
+  await fetchBookingsFromSheet();
+  render();
+  refreshSyncBadge();
+  btn.disabled = false;
+});
+
+// ===== Sync settings modal =====
+document.getElementById('sync-badge').addEventListener('click', () => {
+  document.getElementById('sync-url-input').value = getSheetUrl();
+  document.getElementById('sync-status-line').classList.remove('show');
+  document.getElementById('sync-modal-backdrop').classList.add('show');
+});
+document.getElementById('sync-modal-close').addEventListener('click', () => {
+  document.getElementById('sync-modal-backdrop').classList.remove('show');
+});
+document.getElementById('sync-modal-backdrop').addEventListener('click', (e) => {
+  if(e.target.id === 'sync-modal-backdrop') e.currentTarget.classList.remove('show');
+});
+
+document.getElementById('sync-save-btn').addEventListener('click', async () => {
+  const val = document.getElementById('sync-url-input').value.trim();
+  const statusLine = document.getElementById('sync-status-line');
+  if(val && !val.startsWith('https://script.google.com/')){
+    statusLine.className = 'sync-status-line err show';
+    statusLine.textContent = 'That doesn\u2019t look like a Google Apps Script web app URL. Double-check and try again.';
+    return;
+  }
+  setSheetUrl(val);
+  refreshSyncBadge();
+  if(val){
+    statusLine.className = 'sync-status-line ok show';
+    statusLine.textContent = 'Saved. Loading shared data\u2026';
+    const ok = await fetchBookingsFromSheet();
+    render();
+    refreshSyncBadge();
+    statusLine.className = ok ? 'sync-status-line ok show' : 'sync-status-line err show';
+    statusLine.textContent = ok
+      ? `Connected. Loaded ${bookings.length} shared booking${bookings.length===1?'':'s'} from the sheet.`
+      : 'Saved, but couldn\u2019t load data from that URL. Double-check the deployment is live and set to "Anyone" access.';
+  }else{
+    bookings = [];
+    saveCachedBookings();
+    render();
+    statusLine.className = 'sync-status-line ok show';
+    statusLine.textContent = 'Cleared. This page will no longer read shared data.';
+  }
+});
+
+document.getElementById('sync-test-btn').addEventListener('click', async () => {
+  const statusLine = document.getElementById('sync-status-line');
+  const url = document.getElementById('sync-url-input').value.trim() || getSheetUrl();
+  if(!url){
+    statusLine.className = 'sync-status-line err show';
+    statusLine.textContent = 'Paste and save a web app URL first.';
+    return;
+  }
+  setSheetUrl(url);
+  refreshSyncBadge();
+  statusLine.className = 'sync-status-line ok show';
+  statusLine.textContent = 'Checking connection\u2026';
+  try{
+    const raw = await fetchRawBookings(url);
+    bookings = raw;
+    lastSyncedAt = new Date();
+    isUsingCache = false;
+    saveCachedBookings();
+    render();
+    refreshSyncBadge();
+    statusLine.className = 'sync-status-line ok show';
+    statusLine.textContent = `Success \u2014 loaded ${raw.length} shared booking${raw.length===1?'':'s'} from the sheet.`;
+  }catch(err){
+    statusLine.className = 'sync-status-line err show';
+    statusLine.textContent = 'Could not read from that URL. Make sure the deployment\u2019s access is set to "Anyone" and that you\u2019ve redeployed after updating the script.';
+  }
+});
+
+// ===== Init =====
+async function init(){
+  loadCachedBookings();
+  renderPills();
+  refreshSyncBadge();
+  render();
+
+  await fetchBookingsFromSheet();
+  refreshSyncBadge();
+  render();
+}
+
+init();
+
+
+</script>
+</body>
+</html>
